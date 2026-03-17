@@ -1,0 +1,54 @@
+---
+title: "音频上传"
+description: "通过 URL 上传音频文件，获取 Clip ID 用于后续操作"
+---
+
+## 接口
+
+```http
+POST /api/v1/music/upload
+```
+
+**同步接口。** 上传完成后立即返回片段元数据。
+
+提供音频文件的外部 URL（MP3、WAV 等），上传后返回 `clipId`，可用于 [添加伴奏](/zh/api-reference/music/add-instrumental) 或 [哼唱生成](/zh/api-reference/music/sample) 等操作。
+
+## 请求参数
+
+| 字段 | 类型 | 是否必填 | 说明 |
+|------|------|---------|------|
+| `audio_url` | string | **必填** | 音频文件的可公开访问 URL |
+
+## 响应
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "clipId": "abc123def456",
+    "audioUrl": "https://cdn.example.com/audio/abc123def456.mp3",
+    "duration": 30,
+    "status": 1
+  }
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `clipId` | string | 后续操作使用的片段 ID |
+| `audioUrl` | string | 处理后的音频 URL |
+| `duration` | integer | 音频时长（秒） |
+| `status` | integer | 上传状态码，`1` = 就绪 |
+
+## 示例
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/upload \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "audio_url": "https://example.com/vocals.mp3"
+  }'
+```

@@ -1,0 +1,59 @@
+---
+title: "Concat"
+description: "Merge a clipped segment back into a full-length song"
+---
+
+## Endpoint
+
+```http
+POST /api/v1/music/concat
+```
+
+**Synchronous** (blocking). Submits a concat job and waits for completion (up to 5 minutes). Returns the finished track.
+
+Takes an existing clip and reconstructs the full-length version of the song it originated from.
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `clip_id` | string | **Yes** | Clip ID of the segment to concat. |
+
+## Response
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "id": "abc123def456",
+    "status": 20,
+    "audioUrl": "https://cdn.example.com/audio/abc123def456.mp3",
+    "cld2AudioUrl": "https://cdn.example.com/audio/abc123def456_full.mp3",
+    "duration": 180
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Clip ID of the resulting full-length track. |
+| `cld2AudioUrl` | string | URL of the full-length audio. |
+| `duration` | integer | Audio duration in seconds. |
+
+<Note>
+  This endpoint blocks the HTTP connection for up to 5 minutes while waiting for the concat job to finish. Ensure your client and any proxies have a sufficiently long timeout (≥ 300 seconds).
+</Note>
+
+## Example
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/concat \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  --max-time 600 \
+  -d '{
+    "clip_id": "abc123def456"
+  }'
+```

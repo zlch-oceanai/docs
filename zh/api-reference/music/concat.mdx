@@ -1,0 +1,59 @@
+---
+title: "音频拼接"
+description: "将剪辑片段还原为完整歌曲"
+---
+
+## 接口
+
+```http
+POST /api/v1/music/concat
+```
+
+**同步接口（阻塞）。** 提交拼接任务并等待完成（最长 5 分钟），直接返回完整歌曲。
+
+将已有片段重建为其原始完整歌曲。
+
+## 请求参数
+
+| 字段 | 类型 | 是否必填 | 说明 |
+|------|------|---------|------|
+| `clip_id` | string | **必填** | 要拼接的片段 Clip ID |
+
+## 响应
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "id": "abc123def456",
+    "status": 20,
+    "audioUrl": "https://cdn.example.com/audio/abc123def456.mp3",
+    "cld2AudioUrl": "https://cdn.example.com/audio/abc123def456_full.mp3",
+    "duration": 180
+  }
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | string | 完整歌曲的 Clip ID |
+| `cld2AudioUrl` | string | 完整歌曲的音频 URL |
+| `duration` | integer | 音频时长（秒） |
+
+<Note>
+  该接口会阻塞 HTTP 连接，等待时间最长 5 分钟。请确保客户端及代理的超时时间不少于 300 秒。
+</Note>
+
+## 示例
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/concat \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  --max-time 600 \
+  -d '{
+    "clip_id": "abc123def456"
+  }'
+```

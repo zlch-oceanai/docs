@@ -44,7 +44,11 @@
                   "api-reference/music/remaster",
                   "api-reference/music/soundfx",
                   "api-reference/music/add-vocals",
-                  "api-reference/music/infill"
+                  "api-reference/music/infill",
+                  "api-reference/music/upload",
+                  "api-reference/music/concat",
+                  "api-reference/music/add-instrumental",
+                  "api-reference/music/sample"
                 ]
               },
               {
@@ -115,7 +119,11 @@
                   "zh/api-reference/music/remaster",
                   "zh/api-reference/music/soundfx",
                   "zh/api-reference/music/add-vocals",
-                  "zh/api-reference/music/infill"
+                  "zh/api-reference/music/infill",
+                  "zh/api-reference/music/upload",
+                  "zh/api-reference/music/concat",
+                  "zh/api-reference/music/add-instrumental",
+                  "zh/api-reference/music/sample"
                 ]
               },
               {

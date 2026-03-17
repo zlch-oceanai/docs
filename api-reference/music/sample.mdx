@@ -1,0 +1,68 @@
+---
+title: "Sample / Humming"
+description: "Generate a full song from a hummed or sample audio clip"
+---
+
+## Endpoint
+
+```http
+POST /api/v1/music/sample
+```
+
+**Asynchronous.** Returns a `task_id`. Poll [Get Task](/api-reference/tasks/get) for results.
+
+Takes a hummed melody or sample audio clip (uploaded via [Upload Audio](/api-reference/music/upload)) and generates a full AI-produced song based on its melody and rhythm.
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `clip_id` | string | **Yes** | Clip ID of the source humming/sample audio (from [Upload Audio](/api-reference/music/upload)). |
+| `start_s` | float | No | Start time in seconds of the sample to use. Default `0`. |
+| `end_s` | float | No | End time in seconds of the sample. Default `0` (use full clip). |
+| `mv` | string | No | Model version (e.g. `"chirp-v3-5"`). Uses default if omitted. |
+| `callback_url` | string | No | Webhook URL for completion notification. See [Webhooks](/api-reference/webhooks). |
+| `retention_days` | integer | No | Days to retain audio files. Default `7`. |
+
+## Response
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "queuing"
+  }
+}
+```
+
+## Workflow
+
+1. Record a hummed melody or audio sample
+2. Upload via [Upload Audio](/api-reference/music/upload) → get `clipId`
+3. Call this endpoint with the `clipId` → get `task_id`
+4. Poll [Get Task](/api-reference/tasks/get) until `status = "completed"`
+5. Access the generated track via `results[].audio_url`
+
+## Example
+
+```bash
+# 1. Upload hummed melody
+CLIP_ID=$(curl -s -X POST https://api.example.com/api/v1/music/upload \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{"audio_url":"https://example.com/my-humming.mp3"}' \
+  | jq -r '.data.clipId')
+
+# 2. Generate song from humming
+curl -X POST https://api.example.com/api/v1/music/sample \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"clip_id\": \"$CLIP_ID\",
+    \"start_s\": 0,
+    \"end_s\": 20
+  }"
+```
