@@ -12,150 +12,130 @@
     "languages": [
       {
         "language": "en",
-        "tabs": [
+        "groups": [
           {
-            "tab": "Guides",
-            "groups": [
-              {
-                "group": "Getting Started",
-                "pages": [
-                  "index",
-                  "quickstart"
-                ]
-              }
+            "group": "Getting Started",
+            "pages": [
+              "index",
+              "quickstart"
             ]
           },
           {
-            "tab": "API Reference",
-            "groups": [
-              {
-                "group": "Overview",
-                "pages": [
-                  "api-reference/introduction",
-                  "api-reference/webhooks",
-                  "api-reference/appkey"
-                ]
-              },
-              {
-                "group": "Music Generation",
-                "pages": [
-                  "api-reference/music/generate",
-                  "api-reference/music/cover",
-                  "api-reference/music/remaster",
-                  "api-reference/music/soundfx",
-                  "api-reference/music/add-vocals",
-                  "api-reference/music/infill",
-                  "api-reference/music/upload",
-                  "api-reference/music/concat",
-                  "api-reference/music/add-instrumental",
-                  "api-reference/music/sample"
-                ]
-              },
-              {
-                "group": "Lyrics",
-                "pages": [
-                  "api-reference/lyrics/generate"
-                ]
-              },
-              {
-                "group": "Audio Processing",
-                "pages": [
-                  "api-reference/audio/stem",
-                  "api-reference/audio/midi",
-                  "api-reference/audio/timeline",
-                  "api-reference/audio/waveform",
-                  "api-reference/audio/wav"
-                ]
-              },
-              {
-                "group": "AI Singer (Persona)",
-                "pages": [
-                  "api-reference/persona/create"
-                ]
-              },
-              {
-                "group": "Tasks & Results",
-                "pages": [
-                  "api-reference/tasks/get",
-                  "api-reference/tasks/list",
-                  "api-reference/music/get"
-                ]
-              }
+            "group": "Overview",
+            "pages": [
+              "api-reference/introduction",
+              "api-reference/webhooks",
+              "api-reference/appkey"
+            ]
+          },
+          {
+            "group": "Music Generation",
+            "pages": [
+              "api-reference/music/generate",
+              "api-reference/music/cover",
+              "api-reference/music/remaster",
+              "api-reference/music/soundfx",
+              "api-reference/music/add-vocals",
+              "api-reference/music/infill",
+              "api-reference/music/upload",
+              "api-reference/music/concat",
+              "api-reference/music/add-instrumental",
+              "api-reference/music/sample"
+            ]
+          },
+          {
+            "group": "Lyrics",
+            "pages": [
+              "api-reference/lyrics/generate"
+            ]
+          },
+          {
+            "group": "Audio Processing",
+            "pages": [
+              "api-reference/audio/stem",
+              "api-reference/audio/midi",
+              "api-reference/audio/timeline",
+              "api-reference/audio/waveform",
+              "api-reference/audio/wav"
+            ]
+          },
+          {
+            "group": "AI Singer (Persona)",
+            "pages": [
+              "api-reference/persona/create"
+            ]
+          },
+          {
+            "group": "Tasks & Results",
+            "pages": [
+              "api-reference/tasks/get",
+              "api-reference/tasks/list",
+              "api-reference/music/get"
             ]
           }
         ]
       },
       {
         "language": "zh",
-        "tabs": [
+        "groups": [
           {
-            "tab": "指南",
-            "groups": [
-              {
-                "group": "快速上手",
-                "pages": [
-                  "zh/index",
-                  "zh/quickstart"
-                ]
-              }
+            "group": "快速上手",
+            "pages": [
+              "zh/index",
+              "zh/quickstart"
             ]
           },
           {
-            "tab": "API 参考",
-            "groups": [
-              {
-                "group": "概述",
-                "pages": [
-                  "zh/api-reference/introduction",
-                  "zh/api-reference/webhooks",
-                  "zh/api-reference/appkey"
-                ]
-              },
-              {
-                "group": "音乐生成",
-                "pages": [
-                  "zh/api-reference/music/generate",
-                  "zh/api-reference/music/cover",
-                  "zh/api-reference/music/remaster",
-                  "zh/api-reference/music/soundfx",
-                  "zh/api-reference/music/add-vocals",
-                  "zh/api-reference/music/infill",
-                  "zh/api-reference/music/upload",
-                  "zh/api-reference/music/concat",
-                  "zh/api-reference/music/add-instrumental",
-                  "zh/api-reference/music/sample"
-                ]
-              },
-              {
-                "group": "歌词",
-                "pages": [
-                  "zh/api-reference/lyrics/generate"
-                ]
-              },
-              {
-                "group": "音频处理",
-                "pages": [
-                  "zh/api-reference/audio/stem",
-                  "zh/api-reference/audio/midi",
-                  "zh/api-reference/audio/timeline",
-                  "zh/api-reference/audio/waveform",
-                  "zh/api-reference/audio/wav"
-                ]
-              },
-              {
-                "group": "AI 歌手（Persona）",
-                "pages": [
-                  "zh/api-reference/persona/create"
-                ]
-              },
-              {
-                "group": "任务与结果",
-                "pages": [
-                  "zh/api-reference/tasks/get",
-                  "zh/api-reference/tasks/list",
-                  "zh/api-reference/music/get"
-                ]
-              }
+            "group": "概述",
+            "pages": [
+              "zh/api-reference/introduction",
+              "zh/api-reference/webhooks",
+              "zh/api-reference/appkey"
+            ]
+          },
+          {
+            "group": "音乐生成",
+            "pages": [
+              "zh/api-reference/music/generate",
+              "zh/api-reference/music/cover",
+              "zh/api-reference/music/remaster",
+              "zh/api-reference/music/soundfx",
+              "zh/api-reference/music/add-vocals",
+              "zh/api-reference/music/infill",
+              "zh/api-reference/music/upload",
+              "zh/api-reference/music/concat",
+              "zh/api-reference/music/add-instrumental",
+              "zh/api-reference/music/sample"
+            ]
+          },
+          {
+            "group": "歌词",
+            "pages": [
+              "zh/api-reference/lyrics/generate"
+            ]
+          },
+          {
+            "group": "音频处理",
+            "pages": [
+              "zh/api-reference/audio/stem",
+              "zh/api-reference/audio/midi",
+              "zh/api-reference/audio/timeline",
+              "zh/api-reference/audio/waveform",
+              "zh/api-reference/audio/wav"
+            ]
+          },
+          {
+            "group": "AI 歌手（Persona）",
+            "pages": [
+              "zh/api-reference/persona/create"
+            ]
+          },
+          {
+            "group": "任务与结果",
+            "pages": [
+              "zh/api-reference/tasks/get",
+              "zh/api-reference/tasks/list",
+              "zh/api-reference/music/get"
             ]
           }
         ]

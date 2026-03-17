@@ -1,31 +1,73 @@
 ---
-title: "AI Music API"
-description: "Enterprise-grade AI music generation for developers"
+title: "MusicMint API"
+description: "Enterprise-grade AI music generation API for developers"
 ---
 
-## Welcome to AI Music API
+## Welcome to MusicMint
 
-Generate professional-quality music, lyrics, and audio with a simple REST API. Built for developers who need reliability, speed, and scale.
+MusicMint gives you a single, consistent REST API to generate professional-quality music, lyrics, audio stems, and more — powered by multiple best-in-class AI models under the hood.
+
+Whether you're building a music app, a content creation tool, or automating audio production at scale, MusicMint handles the complexity so you can focus on your product.
 
 <CardGroup cols={2}>
   <Card title="Quick Start" icon="rocket" href="/quickstart">
     Get your first track generated in under 5 minutes.
   </Card>
   <Card title="API Reference" icon="code" href="/api-reference/introduction">
-    Explore all endpoints and response formats.
+    Explore all endpoints, parameters, and response formats.
   </Card>
   <Card title="Authentication" icon="key" href="/api-reference/appkey">
-    Learn how to create and manage your AppKey.
+    Create and manage your AppKey.
   </Card>
-  <Card title="Music Generation" icon="music" href="/api-reference/music/generate">
-    Generate original tracks from a prompt or style tags.
+  <Card title="Webhooks" icon="webhook" href="/api-reference/webhooks">
+    Get notified when long-running tasks complete.
   </Card>
 </CardGroup>
 
-## What you can build
+## Core capabilities
 
-- **Music generation** — Create original tracks from text prompts or style tags
-- **Cover & remix** — Transform existing clips with new style and lyrics
-- **Audio processing** — Separate stems, export MIDI, get lyrics timeline
-- **AI Singer** — Create a custom AI singer persona from any clip
-- **Sound effects** — Generate custom loops and one-shot sound effects
+### Music generation
+
+Create original, full-length tracks from a text prompt or style tags. Specify mood, genre, instrumentation, or paste in your own lyrics. MusicMint routes your request to the best available model and returns a stream-ready MP3.
+
+### Cover & remix
+
+Transform an existing clip with new style, key, or lyrics. Use the remaster endpoint to clean up or re-process audio without changing the underlying composition.
+
+### Vocal tools
+
+- **Add Vocals** — layer AI-generated vocals on top of an instrumental
+- **Add Instrumental** — add a backing track beneath an uploaded vocal recording
+- **Sample / Humming** — hum a melody, upload it, and get a fully produced song back
+
+### Lyrics generation
+
+Generate song lyrics from a prompt or topic using large language models. Returns structured verses, chorus, and bridge sections ready to paste into a generation request.
+
+### Audio processing
+
+- **Stem separation** — split a track into vocals, drums, bass, and other
+- **MIDI export** — extract a MIDI representation of any clip
+- **Waveform / WAV** — get raw waveform data or lossless audio
+- **Lyrics timeline** — per-word timestamps for karaoke or subtitle sync
+
+### AI Singer (Persona)
+
+Train a custom AI voice model from a short audio sample. Once created, the persona can sing any lyrics in a consistent, recognizable voice.
+
+## How it works
+
+All generation endpoints are **asynchronous**. You submit a request, receive a `task_id`, then either poll `GET /api/v1/task/{id}` or receive a webhook callback when the result is ready. Most tracks complete in 30–120 seconds.
+
+A few utility endpoints (audio upload, concat) are **synchronous** and return results immediately.
+
+## Reliability & scale
+
+- **Multi-model routing** — requests are distributed across providers with automatic failover
+- **Priority queues** — your API tier determines queue priority; Pro keys skip the free queue
+- **TTL-managed storage** — generated files are stored on CDN with configurable retention (default 7 days)
+- **Signed webhooks** — every callback is signed with HMAC-SHA256 so you can verify authenticity
+
+## Rate limits & quotas
+
+Limits are enforced per AppKey and configured in the dashboard. Contact support to request higher limits for production workloads.
