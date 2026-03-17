@@ -1,6 +1,6 @@
 ---
 title: "Create AI Singer (Persona)"
-description: "Train a custom AI singer persona from an existing vocal clip"
+description: "Train a custom AI singer persona from an existing vocal clip, then use it to generate music with a consistent vocal style"
 ---
 
 ## Endpoint
@@ -9,15 +9,13 @@ description: "Train a custom AI singer persona from an existing vocal clip"
 POST /api/v1/music/persona
 ```
 
-**Synchronous.** Returns the created persona data immediately after training completes.
-
-Creates a reusable AI singer persona from an existing clip. Once created, you can reference the persona when generating music to use a consistent vocal style.
+Creates a reusable AI singer persona from an existing clip. Once created, pass the returned `persona_id` to [Generate Music](/api-reference/music/generate) to apply the vocal style to any new track.
 
 ## Request body
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `name` | string | **Yes** | Display name for the persona (e.g. `"My Artist"`). |
+| `name` | string | **Yes** | Display name for the persona (e.g. `"My Artist"` or `"我的歌手"`). |
 | `clip_id` | string | **Yes** | Source clip ID whose vocal style will be learned. |
 
 ## Response
@@ -43,10 +41,44 @@ Creates a reusable AI singer persona from an existing clip. Once created, you ca
 |-------|------|-------------|
 | `taskBatchId` | string | Internal batch identifier |
 | `items` | array | Created persona items |
-| `items[].id` | string | Persona ID — use this when referencing the singer in generation requests |
+| `items[].id` | string | **Persona ID** — pass this as `persona_id` in generation requests |
 | `items[].status` | string | `"complete"` when persona is ready to use |
 
-## Example
+## Using your Persona to generate music
+
+Once you have a `persona_id`, pass it to any [Generate Music](/api-reference/music/generate) request. The AI will sing the generated track in the learned vocal style.
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/generate \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "[Verse]\n月光照在窗台\n风轻轻吹来\n[Chorus]\n你是我心中的光",
+    "title": "心中的光",
+    "tags": "流行 抒情 女声",
+    "persona_id": "persona-abc123"
+  }'
+```
+
+<Tip>
+  `persona_id` works with both **custom mode** (`prompt` + `tags`) and **inspiration mode** (`gpt_description_prompt`). The vocal style is applied regardless of which generation mode you choose.
+</Tip>
+
+## Complete workflow
+
+```
+1. Record or generate a source clip with the target vocal style
+        ↓
+2. (Recommended) Run Stem Separation to isolate clean vocals
+        ↓
+3. POST /api/v1/music/persona  →  receive persona_id
+        ↓
+4. POST /api/v1/music/generate  +  persona_id  →  task_id
+        ↓
+5. Poll GET /api/v1/task/{task_id}  →  audio_url
+```
+
+## Create persona example
 
 ```bash
 curl -X POST https://api.example.com/api/v1/music/persona \

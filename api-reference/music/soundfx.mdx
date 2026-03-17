@@ -11,18 +11,18 @@ POST /api/v1/music/soundfx
 
 **Asynchronous.** Returns a `task_id`. Poll [Get Task](/api-reference/tasks/get) for results.
 
-Generate custom sound effects described in plain text. Suitable for game audio, UI sounds, ambient effects, and music production samples.
+Generate custom sound effects described in plain text. Suitable for game audio, UI sounds, ambient effects, and music production samples. Supports Chinese and English descriptions.
 
 ## Request body
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `sound_desc` | string | **Yes** | Text description of the sound (e.g. `"heavy rain on a tin roof"`). |
+| `sound_desc` | string | **Yes** | Text description of the sound. Supports Chinese and English (e.g. `"heavy rain on a tin roof"` or `"雨打在屋顶上的声音"`). |
 | `sound_type` | string | No | `"loop"` for a looping sample or `"one-shot"` for a single-play sound. Default: `"one-shot"`. |
 | `sound_bpm` | integer | No | Beats per minute (for looping effects). |
 | `sound_key` | string | No | Musical key (e.g. `"C"`, `"Am"`). |
 | `mv` | string | No | Model version override. |
-| `callback_url` | string | No | Webhook URL for completion notification. |
+| `callback_url` | string | No | Webhook URL for completion notification. See [Webhooks](/api-reference/webhooks). |
 | `retention_days` | integer | No | Days to retain audio files. Default `7`. |
 
 ## Response
@@ -39,7 +39,9 @@ Generate custom sound effects described in plain text. Suitable for game audio, 
 }
 ```
 
-## Example
+## Examples
+
+**English description:**
 
 ```bash
 curl -X POST https://api.example.com/api/v1/music/soundfx \
@@ -49,5 +51,17 @@ curl -X POST https://api.example.com/api/v1/music/soundfx \
     "sound_desc": "Thunderstorm with distant thunder and heavy rain",
     "sound_type": "loop",
     "sound_bpm": 120
+  }'
+```
+
+**Chinese description:**
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/soundfx \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sound_desc": "森林中的鸟鸣声，清晨的宁静氛围",
+    "sound_type": "loop"
   }'
 ```

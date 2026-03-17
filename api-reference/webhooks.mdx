@@ -1,0 +1,139 @@
+---
+title: "Webhooks"
+description: "Receive real-time callbacks when async tasks complete"
+---
+
+## Overview
+
+All async generation endpoints accept an optional `callback_url`. When a task finishes (completed or failed), the server makes a single **POST** request to that URL with the task result.
+
+This lets you avoid polling entirely.
+
+## Callback payload
+
+### Music generation completed
+
+```json
+{
+  "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+  "status": "completed",
+  "results": [
+    {
+      "id": "clip-abc123",
+      "audio_url": "https://cdn.example.com/tob/gen/abc123.mp3",
+      "image_url": "https://cdn.example.com/tob/gen/abc123.jpg",
+      "title": "My Track",
+      "duration": 87.4,
+      "tags": "pop upbeat",
+      "prompt": "[Verse]\nSilent stars above...",
+      "expire_at": 1710604800000
+    }
+  ]
+}
+```
+
+### Task failed
+
+```json
+{
+  "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+  "status": "failed",
+  "error": "Generation failed: all platforms unavailable"
+}
+```
+
+## Payload fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `task_id` | string | The task ID that finished |
+| `status` | string | `"completed"` or `"failed"` |
+| `results` | array | Present only when `status = "completed"`. Array of generated music items. |
+| `results[].id` | string | Clip ID — use in audio processing endpoints |
+| `results[].audio_url` | string | MP3 download link |
+| `results[].image_url` | string | Cover art URL |
+| `results[].title` | string | Track title |
+| `results[].duration` | float | Duration in seconds |
+| `results[].tags` | string | Style tags |
+| `results[].prompt` | string | Lyrics / generation prompt |
+| `results[].expire_at` | integer | Unix timestamp (ms) when files expire |
+| `error` | string | Present only when `status = "failed"` |
+
+## Endpoints that support callbacks
+
+| Endpoint | Callback triggered when |
+|----------|------------------------|
+| `POST /api/v1/music/generate` | Track generation completes or fails |
+| `POST /api/v1/music/cover` | Cover / remix completes or fails |
+| `POST /api/v1/music/remaster` | Remaster completes or fails |
+| `POST /api/v1/music/soundfx` | Sound effect generation completes or fails |
+| `POST /api/v1/music/add-vocals` | Vocal overpainting completes or fails |
+| `POST /api/v1/music/infill` | Section replacement completes or fails |
+
+<Note>
+  Audio processing endpoints (`/stem`, `/midi`, `/timeline`, `/waveform`, `/wav`) are synchronous and do not support `callback_url`.
+</Note>
+
+## Signature verification
+
+Every callback includes an `X-Signature` header. Verify it to confirm the request came from the API:
+
+```
+X-Signature: sha256=<hex_digest>
+```
+
+**Algorithm:** `HMAC-SHA256(raw_request_body, signing_secret)`
+
+Your `signing_secret` is shown **once** when you create the AppKey. Store it securely.
+
+**Example — Node.js:**
+
+```javascript
+const crypto = require('crypto');
+
+function verifySignature(rawBody, signature, secret) {
+  const expected = 'sha256=' + crypto
+    .createHmac('sha256', secret)
+    .update(rawBody)
+    .digest('hex');
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}
+
+// Express handler
+app.post('/webhooks/music', (req, res) => {
+  const sig = req.headers['x-signature'];
+  if (!verifySignature(req.rawBody, sig, process.env.SIGNING_SECRET)) {
+    return res.sendStatus(401);
+  }
+  const { task_id, status, results } = req.body;
+  if (status === 'completed') {
+    // results[0].audio_url is ready to download
+  }
+  res.sendStatus(200);
+});
+```
+
+**Example — Python:**
+
+```python
+import hmac, hashlib
+
+def verify_signature(raw_body: bytes, signature: str, secret: str) -> bool:
+    expected = 'sha256=' + hmac.new(
+        secret.encode(), raw_body, hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(signature, expected)
+```
+
+## Reliability
+
+- The server retries failed callbacks up to **5 times** with exponential back-off (30s, 60s, 120s, 300s, 600s).
+- Your endpoint must return HTTP `2xx` within **10 seconds**; otherwise the delivery is considered failed.
+- After all retries are exhausted, use [Get Task](/api-reference/tasks/get) to retrieve the result manually.
+
+<Tip>
+  Always return `200 OK` immediately and process the callback asynchronously. Slow handlers cause unnecessary retries.
+</Tip>

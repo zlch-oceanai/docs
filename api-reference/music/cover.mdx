@@ -18,11 +18,11 @@ Generates a new track inspired by an existing clip (`cover_clip_id`). You can ov
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `cover_clip_id` | string | **Yes** | Clip ID of the source track to cover. |
-| `prompt` | string | No | New lyrics or description. If omitted, uses the original. |
-| `tags` | string | No | New style tags. If omitted, uses the original style. |
+| `prompt` | string | No | New lyrics. Supports Chinese and English. If omitted, uses the original. |
+| `tags` | string | No | New style tags (e.g. `"流行 抒情"` or `"jazz piano"`). If omitted, uses the original style. |
 | `title` | string | No | New track title. |
 | `mv` | string | No | Model version (e.g. `"chirp-v3-5"`). Uses default if omitted. |
-| `callback_url` | string | No | Webhook URL for completion notification. |
+| `callback_url` | string | No | Webhook URL for completion notification. See [Webhooks](/api-reference/webhooks). |
 | `retention_days` | integer | No | Days to retain audio files. Default `7`. |
 
 ## Response
@@ -47,7 +47,7 @@ curl -X POST https://api.example.com/api/v1/music/cover \
   -H "Content-Type: application/json" \
   -d '{
     "cover_clip_id": "abc123def456",
-    "prompt": "Transformed into a jazz arrangement",
-    "tags": "jazz piano saxophone smooth"
+    "prompt": "[主歌]\n月光照耀着大地\n[副歌]\n让我们一起飞翔",
+    "tags": "流行 抒情 女声"
   }'
 ```

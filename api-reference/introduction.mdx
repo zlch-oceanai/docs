@@ -109,17 +109,23 @@ When completed:
 
 ## Webhook callbacks
 
-When you provide `callback_url`, the server sends a POST request when the task completes:
+When you provide `callback_url`, the server sends a POST request when the task completes or fails. See the [Webhooks](/api-reference/webhooks) page for full payload details, signature verification, and retry behavior.
 
 ```json
 {
   "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
   "status": "completed",
-  "results": [ { ... } ]
+  "results": [
+    {
+      "id": "clip-abc123",
+      "audio_url": "https://cdn.example.com/tob/gen/abc123.mp3",
+      "image_url": "https://cdn.example.com/tob/gen/abc123.jpg",
+      "title": "My Track",
+      "duration": 87.4,
+      "expire_at": 1710604800000
+    }
+  ]
 }
-```
-
-**Signature verification:** Each webhook includes an `X-Signature` header. Compute `HMAC-SHA256(body, signing_secret)` and compare. Your `signing_secret` is shown once when creating the AppKey.
 
 ## Data retention
 

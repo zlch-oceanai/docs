@@ -11,18 +11,18 @@ POST /api/v1/lyrics/generate
 
 **Asynchronous.** Returns a `task_id`. Poll [Get Task](/api-reference/tasks/get) for results.
 
-Generates song lyrics based on a text prompt, topic, mood, or keyword. The result is a completed lyrics text (not an audio file).
+Generates song lyrics based on a text prompt, topic, mood, or keyword. The result is a completed lyrics text (not an audio file). Supports Chinese and English.
 
 ## Request body
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `prompt` | string | See note | Free-form description of the song or desired lyrics content. |
-| `topics` | string | See note | Topic(s) for the song (e.g. `"love, summer, road trip"`). |
-| `moods` | string | No | Emotional tone (e.g. `"happy, nostalgic"`). |
-| `style` | string | No | Musical style (e.g. `"country ballad"`). |
+| `prompt` | string | See note | Free-form description of the song or desired lyrics content. Supports Chinese and English. |
+| `topics` | string | See note | Topic(s) for the song (e.g. `"love, summer"` or `"爱情, 思念"`). |
+| `moods` | string | No | Emotional tone (e.g. `"happy, nostalgic"` or `"悲伤, 治愈"`). |
+| `style` | string | No | Musical style (e.g. `"country ballad"` or `"流行抒情"`). |
 | `keyword` | string | See note | Key words or phrases to include in the lyrics. |
-| `callback_url` | string | No | Webhook URL for completion notification. |
+| `callback_url` | string | No | Webhook URL for completion notification. See [Webhooks](/api-reference/webhooks). |
 | `retention_days` | integer | No | Days to retain result. Default `7`. |
 
 <Note>
@@ -45,7 +45,9 @@ The task result contains generated lyrics in the music result's `prompt` field.
 }
 ```
 
-## Example
+## Examples
+
+**English:**
 
 ```bash
 curl -X POST https://api.example.com/api/v1/lyrics/generate \
@@ -55,5 +57,18 @@ curl -X POST https://api.example.com/api/v1/lyrics/generate \
     "topics": "heartbreak, rain, moving on",
     "moods": "melancholic, hopeful",
     "style": "indie folk"
+  }'
+```
+
+**Chinese:**
+
+```bash
+curl -X POST https://api.example.com/api/v1/lyrics/generate \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "topics": "思念, 离别, 重逢",
+    "moods": "感伤, 温暖",
+    "style": "流行抒情"
   }'
 ```

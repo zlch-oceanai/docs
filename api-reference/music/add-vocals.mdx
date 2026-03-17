@@ -20,10 +20,10 @@ Takes an existing clip and "paints" new vocal content over a specified time rang
 | `chop_sample_clip_id` | string | **Yes** | Clip ID of the vocal sample source. |
 | `chop_sample_start_s` | float | No | Start time (seconds) in the sample clip. Default `0`. |
 | `chop_sample_end_s` | float | No | End time (seconds) in the sample clip. Default: full clip. |
-| `prompt` | string | No | Lyric content or description for the new vocal section. |
-| `tags` | string | No | Style tags for the new vocal section. |
+| `prompt` | string | No | Lyric content for the new vocal section. Supports Chinese and English. |
+| `tags` | string | No | Style tags (e.g. `"流行 女声"` or `"pop female"`). |
 | `mv` | string | No | Model version override. |
-| `callback_url` | string | No | Webhook URL for completion notification. |
+| `callback_url` | string | No | Webhook URL for completion notification. See [Webhooks](/api-reference/webhooks). |
 | `retention_days` | integer | No | Days to retain audio files. Default `7`. |
 
 ## Response
@@ -50,6 +50,7 @@ curl -X POST https://api.example.com/api/v1/music/add-vocals \
     "chop_sample_clip_id": "abc123def456",
     "chop_sample_start_s": 10.0,
     "chop_sample_end_s": 25.0,
-    "prompt": "Soulful chorus about freedom"
+    "prompt": "[副歌]\n在这片土地上\n我找到了归宿",
+    "tags": "流行 抒情"
   }'
 ```

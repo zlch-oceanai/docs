@@ -15,16 +15,33 @@ This is an **asynchronous** endpoint. It returns a `task_id` immediately. Use [G
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `prompt` | string | See note | Lyric content or song description. Required if `tags` is empty. |
+| `prompt` | string | See note | Lyric content or song description. Supports Chinese and English. Required unless `tags` or `gpt_description_prompt` is provided. |
 | `title` | string | No | Track title. |
-| `tags` | string | See note | Style tags (e.g. `"pop upbeat female vocals"`). Required if `prompt` is empty. |
+| `tags` | string | See note | Style tags (e.g. `"pop upbeat female vocals"` or `"流行 治愈 女声"`). Required unless `prompt` or `gpt_description_prompt` is provided. |
+| `gpt_description_prompt` | string | See note | **Inspiration mode.** Describe the song in natural language instead of writing lyrics (e.g. `"An upbeat Chinese pop song about summer and friendship"`). Cannot be used together with `prompt`/`tags`. |
 | `make_instrumental` | boolean | No | Generate an instrumental track (no lyrics). Default `false`. |
-| `callback_url` | string | No | URL to receive webhook callback when task completes. |
+| `persona_id` | string | No | AI singer persona ID. Apply a custom vocal style trained from a specific clip. Get this ID from [Create Persona](/api-reference/persona/create). |
+| `continue_clip_id` | string | No | Extend an existing clip. Provide the clip ID to continue from. |
+| `continue_at` | integer | No | Position in seconds to start the extension from. Only used with `continue_clip_id`. |
+| `callback_url` | string | No | URL to receive a webhook callback when the task completes. |
 | `retention_days` | integer | No | How many days to keep audio files. Default `7`, max `30`. |
 
 <Note>
-  At least one of `prompt` or `tags` is required.
+  At least one of `prompt`, `tags`, or `gpt_description_prompt` is required.
+  `gpt_description_prompt` cannot be combined with `prompt` or `tags`.
 </Note>
+
+## Language support
+
+All text fields (`prompt`, `title`, `tags`, `gpt_description_prompt`) support **Chinese and English**.
+
+```json
+{
+  "prompt": "[主歌]\n风吹过树梢\n阳光洒在肩头\n[副歌]\n我在这里等你回来",
+  "title": "等你回来",
+  "tags": "流行 抒情 女声"
+}
+```
 
 ## Response
 
@@ -45,17 +62,57 @@ This is an **asynchronous** endpoint. It returns a `task_id` immediately. Use [G
 | `task_id` | string | Use this to poll [Get Task](/api-reference/tasks/get) for results. |
 | `status` | string | Initial status — always `"queuing"`. |
 
-## Example
+## Examples
+
+**Custom mode (lyrics + tags):**
 
 ```bash
 curl -X POST https://api.example.com/api/v1/music/generate \
   -H "Authorization: Bearer sk-mm-your-key" \
   -H "Content-Type: application/json" \
   -d '{
-    "prompt": "A dreamy indie pop song about rainy days",
-    "title": "Rainy Day",
-    "tags": "indie pop dreamy",
+    "prompt": "[Verse]\nSilent stars above\nGuiding me tonight\n[Chorus]\nForever in the light",
+    "title": "Starlight",
+    "tags": "pop dreamy female vocals",
     "callback_url": "https://yourserver.com/webhooks/music"
+  }'
+```
+
+**Inspiration mode (natural language description):**
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/generate \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "gpt_description_prompt": "A calm Chinese folk song about missing home, gentle guitar, female voice"
+  }'
+```
+
+**With a custom AI singer persona:**
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/generate \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "[Verse]\nRainy nights remind me of you\n[Chorus]\nCome back to me",
+    "tags": "rnb slow female",
+    "persona_id": "persona-abc123"
+  }'
+```
+
+**Extend an existing clip:**
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/generate \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "[Bridge]\nThe story continues here",
+    "tags": "pop",
+    "continue_clip_id": "clip-abc123",
+    "continue_at": 60
   }'
 ```
 
