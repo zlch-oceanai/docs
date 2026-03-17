@@ -13,13 +13,11 @@ POST /api/v1/music/stem
 
 从已有音乐片段中分离人声轨道。可选择指定时间范围，仅处理特定人声片段。
 
-<Snippet file="clip-id-source-zh.mdx" />
-
 ## 请求参数
 
 | 字段 | 类型 | 是否必填 | 说明 |
 |------|------|---------|------|
-| `clip_id` | string | **必填** | 要处理的源片段 Clip ID |
+| `clip_id` | string | **必填** | 要处理的音频片段 ID。通过 [音频上传](/zh/api-reference/music/upload) 获取（`data.clipId`），或使用生成任务完成后的 `results[].id`。 |
 | `vocal_start_s` | float | 否 | 处理片段的起始时间（秒）。默认 `0`。 |
 | `vocal_end_s` | float | 否 | 处理片段的结束时间（秒）。默认：完整片段。 |
 

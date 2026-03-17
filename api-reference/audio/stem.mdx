@@ -13,13 +13,11 @@ POST /api/v1/music/stem
 
 Separates the vocal track from an existing music clip. You can optionally specify a time range to isolate a particular vocal section.
 
-<Snippet file="clip-id-source.mdx" />
-
 ## Request body
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `clip_id` | string | **Yes** | Source clip ID to separate. |
+| `clip_id` | string | **Yes** | Clip ID to process. Obtain from [Upload Audio](/api-reference/music/upload) (`data.clipId`) or a completed generation task (`results[].id`). |
 | `vocal_start_s` | float | No | Start time (seconds) of the section to process. Default `0`. |
 | `vocal_end_s` | float | No | End time (seconds) of the section to process. Default: full clip. |
 

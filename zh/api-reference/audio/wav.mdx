@@ -13,13 +13,11 @@ GET /api/v1/music/wav?clip_id={clip_id}
 
 返回片段的无损 WAV 格式下载链接，适用于需要无压缩音频的专业制作工作流。
 
-<Snippet file="clip-id-source-zh.mdx" />
-
 ## 查询参数
 
 | 参数 | 类型 | 是否必填 | 说明 |
 |------|------|---------|------|
-| `clip_id` | string | **必填** | 要下载 WAV 的片段 Clip ID |
+| `clip_id` | string | **必填** | 要下载 WAV 的音频片段 ID。通过 [音频上传](/zh/api-reference/music/upload) 获取（`data.clipId`），或使用生成任务完成后的 `results[].id`。 |
 
 ## 响应
 

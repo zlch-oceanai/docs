@@ -13,13 +13,11 @@ GET /api/v1/music/waveform?clip_id={clip_id}
 
 Returns amplitude data points for a clip, suitable for rendering audio waveform visualizations in your UI.
 
-<Snippet file="clip-id-source.mdx" />
-
 ## Query parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `clip_id` | string | **Yes** | Clip ID to retrieve waveform for. |
+| `clip_id` | string | **Yes** | Clip ID to retrieve waveform for. Obtain from [Upload Audio](/api-reference/music/upload) (`data.clipId`) or a completed generation task (`results[].id`). |
 
 ## Response
 

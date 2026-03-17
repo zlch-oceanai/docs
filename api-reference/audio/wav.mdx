@@ -13,13 +13,11 @@ GET /api/v1/music/wav?clip_id={clip_id}
 
 Returns a lossless WAV format download URL for a clip. Use this when you need uncompressed audio for professional production workflows.
 
-<Snippet file="clip-id-source.mdx" />
-
 ## Query parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `clip_id` | string | **Yes** | Clip ID to download as WAV. |
+| `clip_id` | string | **Yes** | Clip ID to download as WAV. Obtain from [Upload Audio](/api-reference/music/upload) (`data.clipId`) or a completed generation task (`results[].id`). |
 
 ## Response
 

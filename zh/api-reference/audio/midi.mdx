@@ -13,13 +13,11 @@ POST /api/v1/music/midi
 
 分析音乐片段并以结构化格式返回乐器音符数据，兼容 MIDI 标准。适用于音乐制作工作流、乐谱记谱或交互式音乐工具。
 
-<Snippet file="clip-id-source-zh.mdx" />
-
 ## 请求参数
 
 | 字段 | 类型 | 是否必填 | 说明 |
 |------|------|---------|------|
-| `clip_id` | string | **必填** | 要分析的源片段 Clip ID |
+| `clip_id` | string | **必填** | 要分析的音频片段 ID。通过 [音频上传](/zh/api-reference/music/upload) 获取（`data.clipId`），或使用生成任务完成后的 `results[].id`。 |
 | `stem_clip_id` | string | 否 | 可选的人声分离任务 ID（来自 [人声分离](/zh/api-reference/audio/stem)），可提高乐器分离精度。 |
 
 ## 响应

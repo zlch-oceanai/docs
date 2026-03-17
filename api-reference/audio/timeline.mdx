@@ -13,13 +13,11 @@ GET /api/v1/music/timeline?clip_id={clip_id}
 
 Returns the start and end timestamps for each lyric word in a clip. Use this to build synchronized lyric displays (karaoke-style), subtitle files, or animated text overlays.
 
-<Snippet file="clip-id-source.mdx" />
-
 ## Query parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `clip_id` | string | **Yes** | Clip ID to retrieve timing for. |
+| `clip_id` | string | **Yes** | Clip ID to retrieve timing for. Obtain from [Upload Audio](/api-reference/music/upload) (`data.clipId`) or a completed generation task (`results[].id`). |
 
 ## Response
 
