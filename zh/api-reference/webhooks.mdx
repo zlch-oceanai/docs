@@ -1,0 +1,139 @@
+---
+title: "Webhook 回调"
+description: "异步任务完成时接收实时回调通知"
+---
+
+## 概述
+
+所有异步生成接口都接受可选的 `callback_url` 参数。任务完成（成功或失败）后，服务器会向该 URL 发送一次 **POST** 请求，携带任务结果。
+
+这样你就可以完全省去轮询操作。
+
+## 回调 Payload
+
+### 音乐生成成功
+
+```json
+{
+  "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+  "status": "completed",
+  "results": [
+    {
+      "id": "clip-abc123",
+      "audio_url": "https://cdn.example.com/tob/gen/abc123.mp3",
+      "image_url": "https://cdn.example.com/tob/gen/abc123.jpg",
+      "title": "我的曲目",
+      "duration": 87.4,
+      "tags": "流行 欢快",
+      "prompt": "[主歌]\n璀璨的繁星...",
+      "expire_at": 1710604800000
+    }
+  ]
+}
+```
+
+### 任务失败
+
+```json
+{
+  "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+  "status": "failed",
+  "error": "Generation failed: all platforms unavailable"
+}
+```
+
+## Payload 字段说明
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `task_id` | string | 已完成的任务 ID |
+| `status` | string | `"completed"` 或 `"failed"` |
+| `results` | array | 仅当 `status = "completed"` 时存在，包含生成的音乐列表 |
+| `results[].id` | string | Clip ID — 用于音频处理接口 |
+| `results[].audio_url` | string | MP3 下载链接 |
+| `results[].image_url` | string | 封面图片 URL |
+| `results[].title` | string | 曲目标题 |
+| `results[].duration` | float | 时长（秒） |
+| `results[].tags` | string | 风格标签 |
+| `results[].prompt` | string | 歌词 / 生成描述 |
+| `results[].expire_at` | integer | 文件过期的 Unix 时间戳（毫秒） |
+| `error` | string | 仅当 `status = "failed"` 时存在 |
+
+## 支持回调的接口
+
+| 接口 | 触发时机 |
+|------|---------|
+| `POST /api/v1/music/generate` | 生成完成或失败 |
+| `POST /api/v1/music/cover` | 翻唱/混音完成或失败 |
+| `POST /api/v1/music/remaster` | 重制完成或失败 |
+| `POST /api/v1/music/soundfx` | 音效生成完成或失败 |
+| `POST /api/v1/music/add-vocals` | 人声叠加完成或失败 |
+| `POST /api/v1/music/infill` | 片段替换完成或失败 |
+
+<Note>
+  音频处理接口（`/stem`、`/midi`、`/timeline`、`/waveform`、`/wav`）为同步接口，不支持 `callback_url`。
+</Note>
+
+## 签名验证
+
+每次回调请求都包含 `X-Signature` 请求头，用于验证请求来源的合法性：
+
+```
+X-Signature: sha256=<hex_digest>
+```
+
+**算法：** `HMAC-SHA256(原始请求体, signing_secret)`
+
+`signing_secret` 在创建 AppKey 时**仅显示一次**，请妥善保存。
+
+**示例 — Node.js：**
+
+```javascript
+const crypto = require('crypto');
+
+function verifySignature(rawBody, signature, secret) {
+  const expected = 'sha256=' + crypto
+    .createHmac('sha256', secret)
+    .update(rawBody)
+    .digest('hex');
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}
+
+// Express 处理示例
+app.post('/webhooks/music', (req, res) => {
+  const sig = req.headers['x-signature'];
+  if (!verifySignature(req.rawBody, sig, process.env.SIGNING_SECRET)) {
+    return res.sendStatus(401);
+  }
+  const { task_id, status, results } = req.body;
+  if (status === 'completed') {
+    // results[0].audio_url 可以下载了
+  }
+  res.sendStatus(200);
+});
+```
+
+**示例 — Python：**
+
+```python
+import hmac, hashlib
+
+def verify_signature(raw_body: bytes, signature: str, secret: str) -> bool:
+    expected = 'sha256=' + hmac.new(
+        secret.encode(), raw_body, hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(signature, expected)
+```
+
+## 可靠性
+
+- 服务器最多重试失败的回调 **5 次**，采用指数退避策略（30s、60s、120s、300s、600s）。
+- 你的接口必须在 **10 秒**内返回 HTTP `2xx`，否则本次投递视为失败。
+- 所有重试耗尽后，可通过 [获取任务](/zh/api-reference/tasks/get) 手动查询结果。
+
+<Tip>
+  建议立即返回 `200 OK`，异步处理回调内容。响应缓慢会导致不必要的重试。
+</Tip>

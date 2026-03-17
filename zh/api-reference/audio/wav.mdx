@@ -1,0 +1,53 @@
+---
+title: "WAV 下载"
+description: "获取片段的高质量 WAV 格式下载链接"
+---
+
+## 接口
+
+```http
+GET /api/v1/music/wav?clip_id={clip_id}
+```
+
+**同步接口。** 立即返回 WAV 下载 URL。
+
+返回片段的无损 WAV 格式下载链接，适用于需要无压缩音频的专业制作工作流。
+
+## 查询参数
+
+| 参数 | 类型 | 是否必填 | 说明 |
+|------|------|---------|------|
+| `clip_id` | string | **必填** | 要下载 WAV 的片段 Clip ID |
+
+## 响应
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": "https://cdn.example.com/tob/gen/abc123.wav"
+}
+```
+
+`data` 字段是一个字符串，包含 WAV 文件的直接下载链接。
+
+## 示例
+
+```bash
+curl "https://api.example.com/api/v1/music/wav?clip_id=abc123def456" \
+  -H "Authorization: Bearer sk-mm-your-key"
+```
+
+下载文件：
+
+```bash
+WAV_URL=$(curl -s "https://api.example.com/api/v1/music/wav?clip_id=abc123" \
+  -H "Authorization: Bearer sk-mm-your-key" | jq -r '.data')
+
+curl -o track.wav "$WAV_URL"
+```
+
+<Note>
+  WAV 文件比 MP3 大得多。下载链接受与片段相同的过期策略约束 — 下载前请通过 [获取音乐](/zh/api-reference/music/get) 确认 `expire_at`。
+</Note>

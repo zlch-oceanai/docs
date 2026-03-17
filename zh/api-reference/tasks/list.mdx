@@ -1,0 +1,88 @@
+---
+title: "任务列表"
+description: "分页查询当前 AppKey 下的所有任务"
+---
+
+## 接口
+
+```http
+POST /api/v1/tasks
+```
+
+返回当前 AppKey 创建的任务分页列表，按创建时间倒序排列（最新的在前）。
+
+## 请求参数
+
+| 字段 | 类型 | 是否必填 | 说明 |
+|------|------|---------|------|
+| `page` | integer | 否 | 页码，默认 `1`。 |
+| `page_size` | integer | 否 | 每页条数，默认 `20`，最大 `100`。 |
+| `status` | integer | 否 | 按状态筛选。`-1` = 全部（默认）。见下方状态值。 |
+
+### 状态筛选值
+
+| 值 | 状态 |
+|----|------|
+| `-1` | 全部（默认） |
+| `0` | 排队中 |
+| `1` | 处理中 |
+| `2` | 已完成 |
+| `3` | 已失败 |
+
+## 响应
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "items": [
+      {
+        "id": "64f3a1b2c8d9e0f1a2b3c4d5",
+        "status": "completed",
+        "created_at": 1710000000000
+      },
+      {
+        "id": "64f3a1b2c8d9e0f1a2b3c4d6",
+        "status": "processing",
+        "created_at": 1709999900000
+      }
+    ],
+    "total": 42,
+    "page": 1
+  }
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `items` | array | 当前页的任务摘要列表 |
+| `total` | integer | 符合筛选条件的任务总数 |
+| `page` | integer | 当前页码 |
+
+### 任务对象字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | string | 任务 ID |
+| `status` | string | 任务状态字符串 |
+| `created_at` | integer | Unix 时间戳（毫秒） |
+| `error` | string | 仅在 `failed` 任务中存在 |
+
+<Note>
+  本接口仅返回任务摘要，不包含 `results`。需要查询音乐结果时，请用指定任务 ID 调用 [获取任务](/zh/api-reference/tasks/get) 接口。
+</Note>
+
+## 示例
+
+```bash
+curl -X POST https://api.example.com/api/v1/tasks \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "page": 1,
+    "page_size": 20,
+    "status": -1
+  }'
+```

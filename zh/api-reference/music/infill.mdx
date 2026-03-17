@@ -1,0 +1,56 @@
+---
+title: "片段替换（Infill）"
+description: "用 AI 生成内容替换曲目中的指定片段"
+---
+
+## 接口
+
+```http
+POST /api/v1/music/infill
+```
+
+**异步接口。** 返回 `task_id`，通过 [获取任务](/zh/api-reference/tasks/get) 轮询结果。
+
+将已有片段指定时间段内的内容替换为新的 AI 生成内容，同时保留其余部分不变。适用于修复或改进特定片段。
+
+## 请求参数
+
+| 字段 | 类型 | 是否必填 | 说明 |
+|------|------|---------|------|
+| `clip_id` | string | **必填** | 源片段的 Clip ID |
+| `infill_start_s` | float | **必填** | 要替换片段的起始时间（秒） |
+| `infill_end_s` | float | **必填** | 要替换片段的结束时间（秒） |
+| `prompt` | string | 否 | 替换片段的描述或歌词，支持中英文。 |
+| `tags` | string | 否 | 风格标签（如 `"摇滚 吉他"` 或 `"rock guitar"`）。 |
+| `mv` | string | 否 | 模型版本覆盖 |
+| `callback_url` | string | 否 | 任务完成时的 Webhook 回调 URL。参见 [Webhook 回调](/zh/api-reference/webhooks)。 |
+| `retention_days` | integer | 否 | 音频文件保存天数。默认 `7`。 |
+
+## 响应
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "queuing"
+  }
+}
+```
+
+## 示例
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/infill \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "clip_id": "abc123def456",
+    "infill_start_s": 45.0,
+    "infill_end_s": 60.0,
+    "prompt": "[桥段]\n电吉他独奏，充满力量",
+    "tags": "摇滚 吉他独奏"
+  }'
+```

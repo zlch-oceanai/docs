@@ -1,0 +1,90 @@
+---
+title: "快速上手"
+description: "5 分钟内生成你的第一首 AI 音乐"
+---
+
+## 第一步：获取 AppKey
+
+登录控制台，进入 **API Keys**，创建一个新的 AppKey。密钥格式如 `sk-mm-xxxxxxxxxxxxxxxx`。
+
+<Warning>
+  请妥善保管你的 AppKey。切勿将其提交到版本控制系统或暴露在客户端代码中。
+</Warning>
+
+## 第二步：生成一首曲目
+
+调用生成接口并传入你的描述：
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/generate \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "一首充满活力的电子音乐，带有合成器琶音和强劲的低音",
+    "title": "我的第一首曲目"
+  }'
+```
+
+响应：
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "queuing"
+  }
+}
+```
+
+## 第三步：轮询任务结果
+
+音乐生成是异步的，通常需要 30–120 秒。轮询任务接口查询进度：
+
+```bash
+curl -X POST https://api.example.com/api/v1/task/64f3a1b2c8d9e0f1a2b3c4d5 \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+当 `status` 变为 `completed` 时，响应中包含 `results` 和音频 URL：
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000001",
+  "data": {
+    "id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "completed",
+    "created_at": 1710000000000,
+    "results": [
+      {
+        "id": "clip-abc123",
+        "audio_url": "https://cdn.example.com/tob/gen/abc123.mp3",
+        "image_url": "https://cdn.example.com/tob/gen/abc123.jpg",
+        "title": "我的第一首曲目",
+        "duration": 87.4,
+        "tags": "电子 合成器",
+        "expire_at": 1710604800000
+      }
+    ]
+  }
+}
+```
+
+## 第四步（可选）：设置 Webhook
+
+无需轮询，只需在请求中提供 `callback_url`。任务完成后，服务器会主动将结果 POST 到你的 URL。
+
+```json
+{
+  "prompt": "...",
+  "callback_url": "https://yourserver.com/webhooks/music"
+}
+```
+
+关于如何验证 Webhook 签名，请参阅 [Webhook 回调](/zh/api-reference/webhooks)。

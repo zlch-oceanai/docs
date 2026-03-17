@@ -1,0 +1,74 @@
+---
+title: "生成歌词"
+description: "通过 AI 从描述、主题或关键词生成歌词"
+---
+
+## 接口
+
+```http
+POST /api/v1/lyrics/generate
+```
+
+**异步接口。** 返回 `task_id`，通过 [获取任务](/zh/api-reference/tasks/get) 轮询结果。
+
+根据文字描述、主题、情绪或关键词生成歌词。结果为完整的歌词文本（非音频文件）。支持中英文。
+
+## 请求参数
+
+| 字段 | 类型 | 是否必填 | 说明 |
+|------|------|---------|------|
+| `prompt` | string | 见说明 | 对歌曲或所需歌词内容的自由描述，支持中英文。 |
+| `topics` | string | 见说明 | 歌曲主题（如 `"爱情, 思念"` 或 `"love, summer"`）。 |
+| `moods` | string | 否 | 情绪基调（如 `"悲伤, 治愈"` 或 `"happy, nostalgic"`）。 |
+| `style` | string | 否 | 音乐风格（如 `"流行抒情"` 或 `"country ballad"`）。 |
+| `keyword` | string | 见说明 | 歌词中需要包含的关键词或短语。 |
+| `callback_url` | string | 否 | 任务完成时的 Webhook 回调 URL。参见 [Webhook 回调](/zh/api-reference/webhooks)。 |
+| `retention_days` | integer | 否 | 结果保存天数。默认 `7`。 |
+
+<Note>
+  `prompt`、`topics`、`keyword` 三者至少提供一个。
+</Note>
+
+## 响应
+
+任务结果中，音乐结果的 `prompt` 字段包含生成的歌词。
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "queuing"
+  }
+}
+```
+
+## 示例
+
+**中文：**
+
+```bash
+curl -X POST https://api.example.com/api/v1/lyrics/generate \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "topics": "思念, 离别, 重逢",
+    "moods": "感伤, 温暖",
+    "style": "流行抒情"
+  }'
+```
+
+**英文：**
+
+```bash
+curl -X POST https://api.example.com/api/v1/lyrics/generate \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "topics": "heartbreak, rain, moving on",
+    "moods": "melancholic, hopeful",
+    "style": "indie folk"
+  }'
+```

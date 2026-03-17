@@ -1,0 +1,56 @@
+---
+title: "叠加人声"
+description: "在已有伴奏或音乐片段上叠加或替换 AI 人声"
+---
+
+## 接口
+
+```http
+POST /api/v1/music/add-vocals
+```
+
+**异步接口。** 返回 `task_id`，通过 [获取任务](/zh/api-reference/tasks/get) 轮询结果。
+
+基于已有片段，在指定时间范围内叠加新的人声内容，以采样源片段作为人声参考。
+
+## 请求参数
+
+| 字段 | 类型 | 是否必填 | 说明 |
+|------|------|---------|------|
+| `chop_sample_clip_id` | string | **必填** | 人声采样源片段的 Clip ID |
+| `chop_sample_start_s` | float | 否 | 采样片段的起始时间（秒）。默认 `0`。 |
+| `chop_sample_end_s` | float | 否 | 采样片段的结束时间（秒）。默认：完整片段。 |
+| `prompt` | string | 否 | 新人声部分的歌词内容，支持中英文。 |
+| `tags` | string | 否 | 风格标签（如 `"流行 女声"` 或 `"pop female"`）。 |
+| `mv` | string | 否 | 模型版本覆盖 |
+| `callback_url` | string | 否 | 任务完成时的 Webhook 回调 URL。参见 [Webhook 回调](/zh/api-reference/webhooks)。 |
+| `retention_days` | integer | 否 | 音频文件保存天数。默认 `7`。 |
+
+## 响应
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "queuing"
+  }
+}
+```
+
+## 示例
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/add-vocals \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "chop_sample_clip_id": "abc123def456",
+    "chop_sample_start_s": 10.0,
+    "chop_sample_end_s": 25.0,
+    "prompt": "[副歌]\n在这片土地上\n我找到了归宿",
+    "tags": "流行 抒情"
+  }'
+```

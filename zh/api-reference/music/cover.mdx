@@ -1,0 +1,53 @@
+---
+title: "翻唱 / 混音"
+description: "基于已有片段创作翻唱或混音，可替换歌词和风格"
+---
+
+## 接口
+
+```http
+POST /api/v1/music/cover
+```
+
+**异步接口。** 返回 `task_id`，通过 [获取任务](/zh/api-reference/tasks/get) 轮询结果。
+
+基于已有片段（`cover_clip_id`）生成新曲目。可以替换歌词（`prompt`）和风格（`tags`），也可以沿用原曲。
+
+## 请求参数
+
+| 字段 | 类型 | 是否必填 | 说明 |
+|------|------|---------|------|
+| `cover_clip_id` | string | **必填** | 要翻唱的源片段 Clip ID |
+| `prompt` | string | 否 | 新歌词，支持中英文。省略则使用原曲歌词。 |
+| `tags` | string | 否 | 新风格标签（如 `"流行 抒情"` 或 `"jazz piano"`）。省略则使用原曲风格。 |
+| `title` | string | 否 | 新曲目标题 |
+| `mv` | string | 否 | 模型版本（如 `"chirp-v3-5"`）。省略则使用默认版本。 |
+| `callback_url` | string | 否 | 任务完成时的 Webhook 回调 URL。参见 [Webhook 回调](/zh/api-reference/webhooks)。 |
+| `retention_days` | integer | 否 | 音频文件保存天数。默认 `7`。 |
+
+## 响应
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "queuing"
+  }
+}
+```
+
+## 示例
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/cover \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cover_clip_id": "abc123def456",
+    "prompt": "[主歌]\n月光照耀着大地\n[副歌]\n让我们一起飞翔",
+    "tags": "流行 抒情 女声"
+  }'
+```

@@ -1,0 +1,67 @@
+---
+title: "音效生成"
+description: "生成 AI 音效 — 循环音效或单次音效"
+---
+
+## 接口
+
+```http
+POST /api/v1/music/soundfx
+```
+
+**异步接口。** 返回 `task_id`，通过 [获取任务](/zh/api-reference/tasks/get) 轮询结果。
+
+通过自然语言描述生成自定义音效。适用于游戏音频、UI 音效、环境氛围音效和音乐制作素材。支持中英文描述。
+
+## 请求参数
+
+| 字段 | 类型 | 是否必填 | 说明 |
+|------|------|---------|------|
+| `sound_desc` | string | **必填** | 音效的文字描述，支持中英文（如 `"铁皮屋顶上的大雨声"` 或 `"heavy rain on a tin roof"`）。 |
+| `sound_type` | string | 否 | `"loop"` 为循环音效，`"one-shot"` 为单次音效。默认 `"one-shot"`。 |
+| `sound_bpm` | integer | 否 | 每分钟节拍数（用于循环音效）。 |
+| `sound_key` | string | 否 | 音调（如 `"C"`、`"Am"`）。 |
+| `mv` | string | 否 | 模型版本覆盖 |
+| `callback_url` | string | 否 | 任务完成时的 Webhook 回调 URL。参见 [Webhook 回调](/zh/api-reference/webhooks)。 |
+| `retention_days` | integer | 否 | 音频文件保存天数。默认 `7`。 |
+
+## 响应
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "queuing"
+  }
+}
+```
+
+## 示例
+
+**中文描述：**
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/soundfx \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sound_desc": "森林中的鸟鸣声，清晨的宁静氛围",
+    "sound_type": "loop"
+  }'
+```
+
+**英文描述：**
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/soundfx \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sound_desc": "Thunderstorm with distant thunder and heavy rain",
+    "sound_type": "loop",
+    "sound_bpm": 120
+  }'
+```

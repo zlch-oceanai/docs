@@ -1,0 +1,145 @@
+---
+title: "获取任务"
+description: "查询异步生成任务的状态和结果"
+---
+
+## 接口
+
+```http
+POST /api/v1/task/{id}
+```
+
+返回任务的当前状态。当 `status` 为 `"completed"` 时，`results` 数组包含所有生成的音乐。
+
+## 路径参数
+
+| 参数 | 说明 |
+|------|------|
+| `id` | 生成接口返回的任务 ID |
+
+## 请求体
+
+无需请求体，发送空 JSON 对象 `{}` 或省略请求体均可。
+
+## 响应
+
+**处理中：**
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "processing",
+    "created_at": 1710000000000
+  }
+}
+```
+
+**完成时：**
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000001",
+  "data": {
+    "id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "completed",
+    "created_at": 1710000000000,
+    "results": [
+      {
+        "id": "clip-abc123",
+        "audio_url": "https://cdn.example.com/tob/gen/abc123.mp3",
+        "image_url": "https://cdn.example.com/tob/gen/abc123.jpg",
+        "title": "我的曲目",
+        "duration": 87.4,
+        "tags": "流行 欢快",
+        "prompt": "一首欢快的流行曲",
+        "expire_at": 1710604800000
+      }
+    ]
+  }
+}
+```
+
+**失败时：**
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000002",
+  "data": {
+    "id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "failed",
+    "created_at": 1710000000000,
+    "error": "Generation failed: all platforms unavailable"
+  }
+}
+```
+
+## 任务状态说明
+
+| 状态 | 含义 |
+|------|------|
+| `queuing` | 等待队列 |
+| `processing` | 生成中 |
+| `completed` | 完成 — `results` 已填充 |
+| `failed` | 失败 — `error` 字段说明原因 |
+
+## 响应字段说明
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | string | 任务 ID |
+| `status` | string | 当前状态 |
+| `created_at` | integer | 任务创建的 Unix 时间戳（毫秒） |
+| `results` | array | 仅当 `status = "completed"` 时存在 |
+| `error` | string | 仅当 `status = "failed"` 时存在 |
+
+### 结果对象字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | string | 音乐片段 ID — 用于音频处理接口 |
+| `audio_url` | string | MP3 下载 URL |
+| `image_url` | string | 封面图片 URL |
+| `title` | string | 曲目标题 |
+| `duration` | float | 时长（秒） |
+| `tags` | string | 风格标签 |
+| `prompt` | string | 生成描述 |
+| `expire_at` | integer | 文件过期的 Unix 时间戳（毫秒） |
+
+## 轮询建议
+
+每 **5 秒**轮询一次。大多数曲目在 30–120 秒内完成。
+
+```python
+import time, requests
+
+def wait_for_task(task_id, api_key, timeout=300):
+    url = f"https://api.example.com/api/v1/task/{task_id}"
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        resp = requests.post(url, json={}, headers=headers).json()
+        status = resp["data"]["status"]
+        if status == "completed":
+            return resp["data"]["results"]
+        if status == "failed":
+            raise Exception(resp["data"].get("error", "Task failed"))
+        time.sleep(5)
+    raise TimeoutError("Task did not complete in time")
+```
+
+## 示例
+
+```bash
+curl -X POST https://api.example.com/api/v1/task/64f3a1b2c8d9e0f1a2b3c4d5 \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```

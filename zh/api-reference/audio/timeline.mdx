@@ -1,0 +1,62 @@
+---
+title: "歌词时间轴"
+description: "获取与音频同步的逐词时间戳数据"
+---
+
+## 接口
+
+```http
+GET /api/v1/music/timeline?clip_id={clip_id}
+```
+
+**同步接口。** 立即返回逐词时间戳数据。
+
+返回片段中每个歌词词语的起止时间戳，用于构建同步歌词显示（卡拉 OK 效果）、字幕文件或动态文字特效。
+
+## 查询参数
+
+| 参数 | 类型 | 是否必填 | 说明 |
+|------|------|---------|------|
+| `clip_id` | string | **必填** | 要获取时间轴的片段 Clip ID |
+
+## 响应
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "aligned": [
+      { "word": "你好", "start": 2.14, "end": 2.56 },
+      { "word": "世界", "start": 2.58, "end": 2.99 },
+      { "word": "这就是", "start": 3.1, "end": 3.3 },
+      { "word": "音乐", "start": 3.5, "end": 3.95 }
+    ]
+  }
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `aligned` | array | 逐词时间戳对象数组 |
+| `aligned[].word` | string | 歌词词语 |
+| `aligned[].start` | float | 起始时间（秒） |
+| `aligned[].end` | float | 结束时间（秒） |
+
+## 示例
+
+```bash
+curl "https://api.example.com/api/v1/music/timeline?clip_id=abc123def456" \
+  -H "Authorization: Bearer sk-mm-your-key"
+```
+
+## 应用场景：卡拉 OK 歌词显示
+
+遍历 `aligned` 数组，根据当前播放时间高亮当前词语：
+
+```javascript
+function getCurrentWord(aligned, currentTime) {
+  return aligned.find(w => currentTime >= w.start && currentTime <= w.end);
+}
+```

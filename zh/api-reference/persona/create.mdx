@@ -1,0 +1,102 @@
+---
+title: "创建 AI 歌手（Persona）"
+description: "从已有人声片段训练自定义 AI 歌手音色，用于生成保持一致风格的音乐"
+---
+
+## 接口
+
+```http
+POST /api/v1/music/persona
+```
+
+从已有片段创建可复用的 AI 歌手音色。创建完成后，将返回的 `persona_id` 传入 [生成音乐](/zh/api-reference/music/generate) 接口，即可将该音色风格应用于任意新曲目。
+
+## 请求参数
+
+| 字段 | 类型 | 是否必填 | 说明 |
+|------|------|---------|------|
+| `name` | string | **必填** | Persona 的显示名称（如 `"我的歌手"` 或 `"My Artist"`）。 |
+| `clip_id` | string | **必填** | 要学习人声风格的源片段 Clip ID。 |
+
+## 响应
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "taskBatchId": "batch-xyz789",
+    "items": [
+      {
+        "id": "persona-abc123",
+        "status": "complete"
+      }
+    ]
+  }
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `taskBatchId` | string | 内部批次标识符 |
+| `items` | array | 已创建的 Persona 列表 |
+| `items[].id` | string | **Persona ID** — 在生成请求中作为 `persona_id` 传入 |
+| `items[].status` | string | `"complete"` 表示 Persona 可以使用 |
+
+## 使用 Persona 生成音乐
+
+获得 `persona_id` 后，在任意 [生成音乐](/zh/api-reference/music/generate) 请求中传入，AI 将以该学习到的人声风格演唱生成的曲目。
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/generate \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "[主歌]\n月光照在窗台\n风轻轻吹来\n[副歌]\n你是我心中的光",
+    "title": "心中的光",
+    "tags": "流行 抒情 女声",
+    "persona_id": "persona-abc123"
+  }'
+```
+
+<Tip>
+  `persona_id` 同时支持**自定义模式**（`prompt` + `tags`）和**灵感模式**（`gpt_description_prompt`）。无论选择哪种生成模式，人声风格都会被应用。
+</Tip>
+
+## 完整工作流
+
+```
+1. 准备或生成一段具有目标人声风格的源片段
+        ↓
+2. （推荐）执行人声分离，提取干净的人声轨道
+        ↓
+3. POST /api/v1/music/persona  →  获得 persona_id
+        ↓
+4. POST /api/v1/music/generate  +  persona_id  →  task_id
+        ↓
+5. 轮询 GET /api/v1/task/{task_id}  →  audio_url
+```
+
+## 创建 Persona 示例
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/persona \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "我的专属歌手",
+    "clip_id": "abc123def456"
+  }'
+```
+
+## 选择源片段的建议
+
+为获得最佳效果，建议选择：
+- 人声清晰、背景噪音少的片段
+- 至少包含 30 秒的人声内容
+- 人声风格全程保持一致
+
+<Tip>
+  建议先对片段执行 [人声分离](/zh/api-reference/audio/stem)，获取干净的人声轨道，再将其作为 Persona 创建的源片段。
+</Tip>

@@ -1,0 +1,56 @@
+---
+title: "波形数据"
+description: "获取用于音频可视化的波形振幅数据"
+---
+
+## 接口
+
+```http
+GET /api/v1/music/waveform?clip_id={clip_id}
+```
+
+**同步接口。** 立即返回波形数据。
+
+返回片段的振幅数据点，可用于在 UI 中渲染音频波形可视化。
+
+## 查询参数
+
+| 参数 | 类型 | 是否必填 | 说明 |
+|------|------|---------|------|
+| `clip_id` | string | **必填** | 要获取波形的片段 Clip ID |
+
+## 响应
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": [0.12, 0.45, 0.78, 0.56, 0.34, ...]
+}
+```
+
+`data` 字段是一个归一化振幅值数组（0.0 到 1.0），以固定间隔采样自片段全程。
+
+## 示例
+
+```bash
+curl "https://api.example.com/api/v1/music/waveform?clip_id=abc123def456" \
+  -H "Authorization: Bearer sk-mm-your-key"
+```
+
+## 应用场景：波形播放器
+
+使用振幅数组渲染可视化波形：
+
+```javascript
+function drawWaveform(canvas, amplitudes) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  amplitudes.forEach((amp, i) => {
+    const x = (i / amplitudes.length) * w;
+    const barH = amp * h;
+    ctx.fillRect(x, (h - barH) / 2, 1, barH);
+  });
+}
+```

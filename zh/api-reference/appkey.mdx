@@ -1,0 +1,44 @@
+---
+title: "AppKey 管理"
+description: "在控制台创建和管理 API 密钥"
+---
+
+## 概述
+
+AppKey 是用于验证 API 请求身份的长期凭证。每个密钥与你的账户绑定，可随时撤销。
+
+AppKey 以 `sk-mm-` 开头，后跟随机字符串。
+
+## 创建 AppKey
+
+1. 登录控制台
+2. 进入 **API Keys**
+3. 点击 **Create Key**
+4. 输入名称，可选填 Webhook 签名密钥
+5. 复制密钥 — 仅展示一次
+
+<Warning>
+  AppKey 及其 `signing_secret` 仅在创建时显示一次，请妥善保存 — 之后无法再次查看。
+</Warning>
+
+## 密钥状态
+
+| 状态 | 说明 |
+|------|------|
+| Active（正常） | 可正常使用 |
+| Disabled（禁用） | 请求返回 `1003` — 密钥已禁用 |
+| Deleted（已删除） | 请求返回 `1004` — 密钥已删除 |
+
+## Webhook 签名密钥
+
+如果你使用了 `callback_url`，请使用 AppKey 关联的 `signing_secret` 验证回调请求的合法性：
+
+```python
+import hmac, hashlib
+
+def verify(body: bytes, signature: str, secret: str) -> bool:
+    expected = hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, signature)
+```
+
+签名通过请求头 `X-Signature` 传递。

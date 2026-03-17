@@ -1,0 +1,133 @@
+---
+title: "接口说明"
+description: "API 规范、认证方式、错误码与异步工作流"
+---
+
+## Base URL
+
+所有 API 接口使用以下 Base URL：
+
+```
+https://api.example.com
+```
+
+所有请求和响应均为 JSON 格式（`Content-Type: application/json`）。
+
+## 身份认证
+
+每个请求必须在 `Authorization` 请求头中携带 AppKey：
+
+```http
+Authorization: Bearer sk-mm-your-appkey
+```
+
+AppKey 以 `sk-mm-` 开头。你可以在控制台的 **API Keys** 页面创建和管理密钥。
+
+<Warning>
+  未携带有效 AppKey 的请求将返回 HTTP 401，错误码为 `1002`。
+</Warning>
+
+## 响应格式
+
+所有响应采用统一的数据信封格式：
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": { ... }
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `code` | integer | `0` = 成功；非零值 = 错误 |
+| `message` | string | 可读的状态描述 |
+| `request_id` | string | 本次请求的唯一 ID，提交工单时请附上 |
+| `data` | object | 响应数据（成功时存在） |
+
+## 错误码
+
+| 范围 | 类别 | 常见错误码 |
+|------|------|-----------|
+| 1xxx | 认证 | 1001 缺少密钥，1002 无效密钥，1003 已禁用，1004 已删除 |
+| 2xxx | 限流 | 2001 超出频率，2002 超出并发，2003 超出日配额 |
+| 3xxx | 账户/额度 | 3001 积分不足，3002 账户被封 |
+| 4xxx | 请求错误 | 4001 参数无效，4002 Prompt 过长，4003 任务不存在，4004 音乐不存在，4005 结果已过期 |
+| 5xxx | 生成错误 | 5001 生成失败，5002 所有平台均失败，5003 任务超时 |
+| 9xxx | 系统错误 | 9001 内部错误，9002 服务不可用 |
+
+错误响应示例：
+
+```json
+{
+  "code": 4001,
+  "message": "prompt or tags is required",
+  "request_id": "req-1710000000000"
+}
+```
+
+## 限流
+
+触发限流时返回 HTTP `429`，并携带以下响应头：
+
+| 响应头 | 说明 |
+|--------|------|
+| `Retry-After` | 距限流重置的秒数 |
+| `X-RateLimit-Limit` | 时间窗口内允许的请求次数 |
+| `X-RateLimit-Remaining` | 当前窗口剩余请求次数 |
+| `X-RateLimit-Reset` | 窗口重置的 Unix 时间戳（毫秒） |
+
+## 异步工作流
+
+大多数音乐生成接口是**异步**的：
+
+```
+POST /api/v1/music/generate
+→ 返回 { task_id, status: "queuing" }
+
+POST /api/v1/task/{task_id}   （轮询）
+→ status: queuing | processing | completed | failed
+
+完成时：
+→ results[] 包含 audio_url、image_url、duration、expire_at
+```
+
+**任务状态：**
+
+| 状态 | 含义 |
+|------|------|
+| `queuing` | 任务已接受，等待队列 |
+| `processing` | AI 生成中 |
+| `completed` | 完成 — `results` 已填充 |
+| `failed` | 生成失败 — `error` 字段说明原因 |
+
+**推荐轮询间隔：** 每 5 秒一次。大多数曲目在 30–120 秒内完成。
+
+**提示：** 使用 `callback_url` 可完全避免轮询 — 服务器会在任务完成后主动 POST 结果到你的接口。
+
+## Webhook 回调
+
+提供 `callback_url` 后，任务完成或失败时服务器会发送 POST 请求。完整的 Payload 结构、签名验证和重试策略请参阅 [Webhook 回调](/zh/api-reference/webhooks)。
+
+```json
+{
+  "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+  "status": "completed",
+  "results": [
+    {
+      "id": "clip-abc123",
+      "audio_url": "https://cdn.example.com/tob/gen/abc123.mp3",
+      "image_url": "https://cdn.example.com/tob/gen/abc123.jpg",
+      "title": "我的曲目",
+      "duration": 87.4,
+      "expire_at": 1710604800000
+    }
+  ]
+}
+```
+
+## 数据保留
+
+生成的音乐文件会保存一段可配置的时长（默认 7 天）。到期后 `audio_url` 和 `image_url` 将不可访问。`expire_at` 字段（Unix 毫秒时间戳）标示每个结果的过期时间。请求已过期的音乐 ID 将返回错误码 `4005`。

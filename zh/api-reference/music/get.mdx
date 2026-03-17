@@ -1,0 +1,70 @@
+---
+title: "获取音乐"
+description: "通过 ID 查询单个音乐结果的详情"
+---
+
+## 接口
+
+```http
+POST /api/v1/music/{id}
+```
+
+返回单个音乐结果的详情。每个任务可能生成多个音乐结果 — 使用 [获取任务](/zh/api-reference/tasks/get) 查看全部结果，再通过本接口获取单个结果详情。
+
+## 路径参数
+
+| 参数 | 说明 |
+|------|------|
+| `id` | 音乐结果 ID（来自获取任务响应中的 `results[].id`） |
+
+## 响应
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "id": "clip-abc123",
+    "audio_url": "https://cdn.example.com/tob/gen/abc123.mp3",
+    "image_url": "https://cdn.example.com/tob/gen/abc123.jpg",
+    "title": "我的曲目",
+    "duration": 87.4,
+    "tags": "流行 欢快",
+    "prompt": "一首欢快的流行曲",
+    "expire_at": 1710604800000
+  }
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | string | 音乐结果 ID（即音频处理接口中使用的 `clip_id`） |
+| `audio_url` | string | MP3 下载 URL |
+| `image_url` | string | 封面图片 URL |
+| `title` | string | 曲目标题 |
+| `duration` | float | 时长（秒） |
+| `tags` | string | 风格标签 |
+| `prompt` | string | 生成描述 |
+| `expire_at` | integer | 文件过期的 Unix 时间戳（毫秒）。`0` = 永不过期。 |
+
+## 错误：结果已过期
+
+若 `expire_at` 已过，接口返回：
+
+```json
+{
+  "code": 4005,
+  "message": "Music result has expired",
+  "request_id": "req-1710000000000"
+}
+```
+
+## 示例
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/clip-abc123 \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```

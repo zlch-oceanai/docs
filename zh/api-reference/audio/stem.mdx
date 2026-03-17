@@ -1,0 +1,66 @@
+---
+title: "人声分离"
+description: "从已有片段中分离人声，获取人声音频 URL"
+---
+
+## 接口
+
+```http
+POST /api/v1/music/stem
+```
+
+**同步接口。** 实时处理，最多需要 5 分钟。处理完成后直接返回结果（无需轮询）。
+
+从已有音乐片段中分离人声轨道。可选择指定时间范围，仅处理特定人声片段。
+
+## 请求参数
+
+| 字段 | 类型 | 是否必填 | 说明 |
+|------|------|---------|------|
+| `clip_id` | string | **必填** | 要处理的源片段 Clip ID |
+| `vocal_start_s` | float | 否 | 处理片段的起始时间（秒）。默认 `0`。 |
+| `vocal_end_s` | float | 否 | 处理片段的结束时间（秒）。默认：完整片段。 |
+
+## 响应
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "id": "stem-abc123",
+    "source_clip_id": "abc123def456",
+    "status": "complete",
+    "vocal_audio_url": "https://cdn.example.com/tob/stem/abc123_vocal.mp3",
+    "vocal_start_s": 0,
+    "vocal_end_s": 87.4
+  }
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | string | 人声分离任务 ID |
+| `source_clip_id` | string | 原始片段 ID |
+| `status` | string | 成功时为 `"complete"` |
+| `vocal_audio_url` | string | 提取的人声音频文件 URL |
+| `vocal_start_s` | float | 实际处理的起始时间 |
+| `vocal_end_s` | float | 实际处理的结束时间 |
+
+## 示例
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/stem \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "clip_id": "abc123def456",
+    "vocal_start_s": 30.0,
+    "vocal_end_s": 90.0
+  }'
+```
+
+<Note>
+  本接口返回的 `vocal_audio_url` 可作为 [叠加人声](/zh/api-reference/music/add-vocals) 接口的 `chop_sample_clip_id` 参数使用。
+</Note>

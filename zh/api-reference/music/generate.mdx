@@ -1,0 +1,124 @@
+---
+title: "生成音乐"
+description: "通过文字描述或风格标签创作 AI 原创音乐"
+---
+
+## 接口
+
+```http
+POST /api/v1/music/generate
+```
+
+这是一个**异步**接口，立即返回 `task_id`。使用 [获取任务](/zh/api-reference/tasks/get) 轮询结果。
+
+## 请求参数
+
+| 字段 | 类型 | 是否必填 | 说明 |
+|------|------|---------|------|
+| `prompt` | string | 见说明 | 歌词内容或歌曲描述，支持中英文。未提供 `tags` 或 `gpt_description_prompt` 时必填。 |
+| `title` | string | 否 | 曲目标题 |
+| `tags` | string | 见说明 | 风格标签（如 `"流行 治愈 女声"` 或 `"pop upbeat female vocals"`）。未提供 `prompt` 或 `gpt_description_prompt` 时必填。 |
+| `gpt_description_prompt` | string | 见说明 | **灵感模式。** 用自然语言描述歌曲，而非直接写歌词（如 `"一首关于夏天和友情的欢快中文流行歌"`）。不可与 `prompt`/`tags` 同时使用。 |
+| `make_instrumental` | boolean | 否 | 生成纯伴奏（无人声）。默认 `false`。 |
+| `persona_id` | string | 否 | AI 歌手音色 ID。使用从特定音频片段训练的自定义音色。通过 [创建 Persona](/zh/api-reference/persona/create) 获取。 |
+| `continue_clip_id` | string | 否 | 续写已有片段。提供要续写的 Clip ID。 |
+| `continue_at` | integer | 否 | 续写的起始位置（秒）。仅与 `continue_clip_id` 配合使用。 |
+| `callback_url` | string | 否 | 任务完成时接收 Webhook 回调的 URL。 |
+| `retention_days` | integer | 否 | 音频文件保存天数。默认 `7`，最大 `30`。 |
+
+<Note>
+  `prompt`、`tags`、`gpt_description_prompt` 三者至少提供一个。
+  `gpt_description_prompt` 不可与 `prompt` 或 `tags` 同时使用。
+</Note>
+
+## 语言支持
+
+所有文本字段（`prompt`、`title`、`tags`、`gpt_description_prompt`）均支持**中文和英文**。
+
+```json
+{
+  "prompt": "[主歌]\n风吹过树梢\n阳光洒在肩头\n[副歌]\n我在这里等你回来",
+  "title": "等你回来",
+  "tags": "流行 抒情 女声"
+}
+```
+
+## 响应
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "queuing"
+  }
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `task_id` | string | 用于轮询 [获取任务](/zh/api-reference/tasks/get) 的任务 ID |
+| `status` | string | 初始状态，固定为 `"queuing"` |
+
+## 示例
+
+**自定义模式（歌词 + 标签）：**
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/generate \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "[主歌]\n风吹过树梢\n阳光洒在肩头\n[副歌]\n我在这里等你回来",
+    "title": "等你回来",
+    "tags": "流行 抒情 女声",
+    "callback_url": "https://yourserver.com/webhooks/music"
+  }'
+```
+
+**灵感模式（自然语言描述）：**
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/generate \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "gpt_description_prompt": "一首关于思念故乡的中国民谣，轻柔吉他，女声演唱"
+  }'
+```
+
+**使用自定义 AI 歌手音色：**
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/generate \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "[主歌]\n雨夜让我想起你\n[副歌]\n请你回来吧",
+    "tags": "rnb 慢歌 女声",
+    "persona_id": "persona-abc123"
+  }'
+```
+
+**续写已有片段：**
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/generate \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "[桥段]\n故事从这里继续",
+    "tags": "流行",
+    "continue_clip_id": "clip-abc123",
+    "continue_at": 60
+  }'
+```
+
+## 典型流程
+
+1. 调用本接口 → 获取 `task_id`
+2. 每 5 秒轮询 `POST /api/v1/task/{task_id}`
+3. 当 `status` = `"completed"` 时，读取 `results[].audio_url`
+4. 文件在 `retention_days` 后过期 — 请及时下载
