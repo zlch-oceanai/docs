@@ -1,0 +1,88 @@
+---
+title: "List Tasks"
+description: "Paginate through all tasks for your AppKey"
+---
+
+## Endpoint
+
+```http
+POST /api/v1/tasks
+```
+
+Returns a paginated list of tasks created by your AppKey, ordered by creation time (newest first).
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `page` | integer | No | Page number. Default `1`. |
+| `page_size` | integer | No | Items per page. Default `20`, max `100`. |
+| `status` | integer | No | Filter by status. `-1` = all (default). See status codes below. |
+
+### Status filter values
+
+| Value | Status |
+|-------|--------|
+| `-1` | All statuses (default) |
+| `0` | Queuing |
+| `1` | Processing |
+| `2` | Completed |
+| `3` | Failed |
+
+## Response
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "items": [
+      {
+        "id": "64f3a1b2c8d9e0f1a2b3c4d5",
+        "status": "completed",
+        "created_at": 1710000000000
+      },
+      {
+        "id": "64f3a1b2c8d9e0f1a2b3c4d6",
+        "status": "processing",
+        "created_at": 1709999900000
+      }
+    ],
+    "total": 42,
+    "page": 1
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `items` | array | Task summary objects for this page |
+| `total` | integer | Total number of tasks matching the filter |
+| `page` | integer | Current page number |
+
+### Item fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Task ID |
+| `status` | string | Task status string |
+| `created_at` | integer | Unix timestamp (ms) |
+| `error` | string | Present only on `failed` tasks |
+
+<Note>
+  This endpoint returns task summaries only — no `results`. Call [Get Task](/api-reference/tasks/get) with a specific task ID to retrieve music results.
+</Note>
+
+## Example
+
+```bash
+curl -X POST https://api.example.com/api/v1/tasks \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "page": 1,
+    "page_size": 20,
+    "status": -1
+  }'
+```

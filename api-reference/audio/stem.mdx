@@ -1,0 +1,66 @@
+---
+title: "Stem Separation"
+description: "Separate vocals from an existing clip and get the vocal audio URL"
+---
+
+## Endpoint
+
+```http
+POST /api/v1/music/stem
+```
+
+**Synchronous.** This operation runs in real time and may take up to 5 minutes. The response is returned once processing completes (no polling needed).
+
+Separates the vocal track from an existing music clip. You can optionally specify a time range to isolate a particular vocal section.
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `clip_id` | string | **Yes** | Source clip ID to separate. |
+| `vocal_start_s` | float | No | Start time (seconds) of the section to process. Default `0`. |
+| `vocal_end_s` | float | No | End time (seconds) of the section to process. Default: full clip. |
+
+## Response
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "id": "stem-abc123",
+    "source_clip_id": "abc123def456",
+    "status": "complete",
+    "vocal_audio_url": "https://cdn.example.com/tob/stem/abc123_vocal.mp3",
+    "vocal_start_s": 0,
+    "vocal_end_s": 87.4
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Stem separation job ID |
+| `source_clip_id` | string | The original clip ID |
+| `status` | string | `"complete"` when successful |
+| `vocal_audio_url` | string | URL of the extracted vocal audio file |
+| `vocal_start_s` | float | Actual start time processed |
+| `vocal_end_s` | float | Actual end time processed |
+
+## Example
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/stem \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "clip_id": "abc123def456",
+    "vocal_start_s": 30.0,
+    "vocal_end_s": 90.0
+  }'
+```
+
+<Note>
+  The `vocal_audio_url` from this endpoint can be used as `chop_sample_clip_id` in the [Add Vocals](/api-reference/music/add-vocals) endpoint.
+</Note>

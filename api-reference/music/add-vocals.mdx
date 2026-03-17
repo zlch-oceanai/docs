@@ -1,0 +1,55 @@
+---
+title: "Add Vocals (Overpainting)"
+description: "Add or replace vocals in an existing instrumental or music clip"
+---
+
+## Endpoint
+
+```http
+POST /api/v1/music/add-vocals
+```
+
+**Asynchronous.** Returns a `task_id`. Poll [Get Task](/api-reference/tasks/get) for results.
+
+Takes an existing clip and "paints" new vocal content over a specified time range using a sample source clip as the vocal reference.
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `chop_sample_clip_id` | string | **Yes** | Clip ID of the vocal sample source. |
+| `chop_sample_start_s` | float | No | Start time (seconds) in the sample clip. Default `0`. |
+| `chop_sample_end_s` | float | No | End time (seconds) in the sample clip. Default: full clip. |
+| `prompt` | string | No | Lyric content or description for the new vocal section. |
+| `tags` | string | No | Style tags for the new vocal section. |
+| `mv` | string | No | Model version override. |
+| `callback_url` | string | No | Webhook URL for completion notification. |
+| `retention_days` | integer | No | Days to retain audio files. Default `7`. |
+
+## Response
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "queuing"
+  }
+}
+```
+
+## Example
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/add-vocals \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "chop_sample_clip_id": "abc123def456",
+    "chop_sample_start_s": 10.0,
+    "chop_sample_end_s": 25.0,
+    "prompt": "Soulful chorus about freedom"
+  }'
+```

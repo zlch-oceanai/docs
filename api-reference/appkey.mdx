@@ -1,0 +1,44 @@
+---
+title: "AppKey Management"
+description: "Create and manage API keys from the dashboard"
+---
+
+## Overview
+
+AppKeys are long-lived credentials used to authenticate API requests. Each key is scoped to your account and can be revoked at any time.
+
+AppKeys have the prefix `sk-mm-` followed by a random token.
+
+## Creating an AppKey
+
+1. Log in at the dashboard
+2. Navigate to **API Keys**
+3. Click **Create Key**
+4. Enter a name and optional webhook signing secret
+5. Copy the key — it is shown only once
+
+<Warning>
+  The AppKey and its `signing_secret` are shown only at creation time. Store them securely — they cannot be retrieved later.
+</Warning>
+
+## Key status
+
+| Status | Description |
+|--------|-------------|
+| Active | Accepts API requests |
+| Disabled | Requests return `1003` — key disabled |
+| Deleted | Requests return `1004` — key deleted |
+
+## Webhook signing secret
+
+If you use `callback_url`, verify incoming webhooks using the `signing_secret` associated with the AppKey:
+
+```python
+import hmac, hashlib
+
+def verify(body: bytes, signature: str, secret: str) -> bool:
+    expected = hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, signature)
+```
+
+The signature is sent in the `X-Signature` request header.

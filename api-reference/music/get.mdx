@@ -1,0 +1,70 @@
+---
+title: "Get Music"
+description: "Retrieve details of a specific music result by ID"
+---
+
+## Endpoint
+
+```http
+POST /api/v1/music/{id}
+```
+
+Returns details for a single music result. Each task may produce multiple music results — use [Get Task](/api-reference/tasks/get) to list them all, then use this endpoint to fetch individual results.
+
+## Path parameter
+
+| Parameter | Description |
+|-----------|-------------|
+| `id` | Music result ID (from `results[].id` in Get Task response) |
+
+## Response
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "id": "clip-abc123",
+    "audio_url": "https://cdn.example.com/tob/gen/abc123.mp3",
+    "image_url": "https://cdn.example.com/tob/gen/abc123.jpg",
+    "title": "My Track",
+    "duration": 87.4,
+    "tags": "pop upbeat",
+    "prompt": "An upbeat pop track",
+    "expire_at": 1710604800000
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Music result ID (the `clip_id` used in audio processing endpoints) |
+| `audio_url` | string | MP3 download URL |
+| `image_url` | string | Cover art URL |
+| `title` | string | Track title |
+| `duration` | float | Duration in seconds |
+| `tags` | string | Style tags |
+| `prompt` | string | Generation prompt |
+| `expire_at` | integer | Unix timestamp (ms) when the file expires. `0` = no expiry. |
+
+## Error: expired result
+
+If `expire_at` has passed, the endpoint returns:
+
+```json
+{
+  "code": 4005,
+  "message": "Music result has expired",
+  "request_id": "req-1710000000000"
+}
+```
+
+## Example
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/clip-abc123 \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```

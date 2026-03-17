@@ -1,0 +1,53 @@
+---
+title: "Cover / Remix"
+description: "Create a cover or remix of an existing clip with new lyrics and style"
+---
+
+## Endpoint
+
+```http
+POST /api/v1/music/cover
+```
+
+**Asynchronous.** Returns a `task_id`. Poll [Get Task](/api-reference/tasks/get) for results.
+
+Generates a new track inspired by an existing clip (`cover_clip_id`). You can override the lyrics (`prompt`), style (`tags`), or keep them from the original.
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `cover_clip_id` | string | **Yes** | Clip ID of the source track to cover. |
+| `prompt` | string | No | New lyrics or description. If omitted, uses the original. |
+| `tags` | string | No | New style tags. If omitted, uses the original style. |
+| `title` | string | No | New track title. |
+| `mv` | string | No | Suno model version (e.g. `"chirp-v3-5"`). Uses default if omitted. |
+| `callback_url` | string | No | Webhook URL for completion notification. |
+| `retention_days` | integer | No | Days to retain audio files. Default `7`. |
+
+## Response
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "queuing"
+  }
+}
+```
+
+## Example
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/cover \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cover_clip_id": "abc123def456",
+    "prompt": "Transformed into a jazz arrangement",
+    "tags": "jazz piano saxophone smooth"
+  }'
+```

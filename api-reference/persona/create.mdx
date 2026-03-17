@@ -1,0 +1,70 @@
+---
+title: "Create AI Singer (Persona)"
+description: "Train a custom AI singer persona from an existing vocal clip"
+---
+
+## Endpoint
+
+```http
+POST /api/v1/music/persona
+```
+
+**Synchronous.** Returns the created persona data immediately after training completes.
+
+Creates a reusable AI singer persona from an existing clip. Once created, you can reference the persona when generating music to use a consistent vocal style.
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | **Yes** | Display name for the persona (e.g. `"My Artist"`). |
+| `clip_id` | string | **Yes** | Source clip ID whose vocal style will be learned. |
+
+## Response
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "taskBatchId": "batch-xyz789",
+    "items": [
+      {
+        "id": "persona-abc123",
+        "status": "complete"
+      }
+    ]
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `taskBatchId` | string | Internal batch identifier |
+| `items` | array | Created persona items |
+| `items[].id` | string | Persona ID — use this when referencing the singer in generation requests |
+| `items[].status` | string | `"complete"` when persona is ready to use |
+
+## Example
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/persona \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Custom Singer",
+    "clip_id": "abc123def456"
+  }'
+```
+
+## Choosing a source clip
+
+For best results, use a clip with:
+- Clear, isolated vocals (minimal background noise)
+- At least 30 seconds of vocal content
+- A consistent vocal style throughout
+
+<Tip>
+  Run [Stem Separation](/api-reference/audio/stem) on a clip first to get a clean vocal track, then use that vocal audio as the source for persona creation.
+</Tip>

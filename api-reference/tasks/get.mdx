@@ -1,0 +1,145 @@
+---
+title: "Get Task"
+description: "Poll the status and results of an async generation task"
+---
+
+## Endpoint
+
+```http
+POST /api/v1/task/{id}
+```
+
+Returns the current status of a task. When `status` is `"completed"`, the `results` array contains all generated music items.
+
+## Path parameter
+
+| Parameter | Description |
+|-----------|-------------|
+| `id` | Task ID returned by a generation endpoint |
+
+## Request body
+
+No body required. Send an empty JSON object `{}` or omit the body.
+
+## Response
+
+**While processing:**
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "processing",
+    "created_at": 1710000000000
+  }
+}
+```
+
+**When completed:**
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000001",
+  "data": {
+    "id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "completed",
+    "created_at": 1710000000000,
+    "results": [
+      {
+        "id": "clip-abc123",
+        "audio_url": "https://cdn.example.com/tob/gen/abc123.mp3",
+        "image_url": "https://cdn.example.com/tob/gen/abc123.jpg",
+        "title": "My Track",
+        "duration": 87.4,
+        "tags": "pop upbeat",
+        "prompt": "An upbeat pop track",
+        "expire_at": 1710604800000
+      }
+    ]
+  }
+}
+```
+
+**When failed:**
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000002",
+  "data": {
+    "id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "failed",
+    "created_at": 1710000000000,
+    "error": "Generation failed: all platforms unavailable"
+  }
+}
+```
+
+## Task status values
+
+| Status | Meaning |
+|--------|---------|
+| `queuing` | Waiting in queue |
+| `processing` | Generation in progress |
+| `completed` | Done — `results` populated |
+| `failed` | Failed — `error` field explains why |
+
+## Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Task ID |
+| `status` | string | Current status |
+| `created_at` | integer | Unix timestamp (ms) when task was created |
+| `results` | array | Present only when `status = "completed"` |
+| `error` | string | Present only when `status = "failed"` |
+
+### Result object fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Music clip ID — use in audio processing endpoints |
+| `audio_url` | string | MP3 download URL |
+| `image_url` | string | Cover art URL |
+| `title` | string | Track title |
+| `duration` | float | Duration in seconds |
+| `tags` | string | Style tags |
+| `prompt` | string | Generation prompt |
+| `expire_at` | integer | Unix timestamp (ms) when files expire |
+
+## Polling recommendation
+
+Poll every **5 seconds**. Most tracks complete within 30–120 seconds.
+
+```python
+import time, requests
+
+def wait_for_task(task_id, api_key, timeout=300):
+    url = f"https://api.example.com/api/v1/task/{task_id}"
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        resp = requests.post(url, json={}, headers=headers).json()
+        status = resp["data"]["status"]
+        if status == "completed":
+            return resp["data"]["results"]
+        if status == "failed":
+            raise Exception(resp["data"].get("error", "Task failed"))
+        time.sleep(5)
+    raise TimeoutError("Task did not complete in time")
+```
+
+## Example
+
+```bash
+curl -X POST https://api.example.com/api/v1/task/64f3a1b2c8d9e0f1a2b3c4d5 \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```

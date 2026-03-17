@@ -1,0 +1,59 @@
+---
+title: "Generate Lyrics"
+description: "Generate song lyrics using AI from a prompt, topics, or keywords"
+---
+
+## Endpoint
+
+```http
+POST /api/v1/lyrics/generate
+```
+
+**Asynchronous.** Returns a `task_id`. Poll [Get Task](/api-reference/tasks/get) for results.
+
+Generates song lyrics based on a text prompt, topic, mood, or keyword. The result is a completed lyrics text (not an audio file).
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `prompt` | string | See note | Free-form description of the song or desired lyrics content. |
+| `topics` | string | See note | Topic(s) for the song (e.g. `"love, summer, road trip"`). |
+| `moods` | string | No | Emotional tone (e.g. `"happy, nostalgic"`). |
+| `style` | string | No | Musical style (e.g. `"country ballad"`). |
+| `keyword` | string | See note | Key words or phrases to include in the lyrics. |
+| `callback_url` | string | No | Webhook URL for completion notification. |
+| `retention_days` | integer | No | Days to retain result. Default `7`. |
+
+<Note>
+  At least one of `prompt`, `topics`, or `keyword` is required.
+</Note>
+
+## Response
+
+The task result contains generated lyrics in the music result's `prompt` field.
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "queuing"
+  }
+}
+```
+
+## Example
+
+```bash
+curl -X POST https://api.example.com/api/v1/lyrics/generate \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "topics": "heartbreak, rain, moving on",
+    "moods": "melancholic, hopeful",
+    "style": "indie folk"
+  }'
+```

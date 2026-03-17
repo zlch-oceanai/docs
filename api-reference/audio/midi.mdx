@@ -1,0 +1,66 @@
+---
+title: "MIDI Export"
+description: "Export the musical notes of a clip as MIDI instrument data"
+---
+
+## Endpoint
+
+```http
+POST /api/v1/music/midi
+```
+
+**Synchronous.** Returns MIDI data directly in the response.
+
+Analyzes a music clip and returns instrument note data in a structured format compatible with MIDI. Useful for music production workflows, score notation, or interactive music tools.
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `clip_id` | string | **Yes** | Source clip ID to analyze. |
+| `stem_clip_id` | string | No | Optional stem clip ID (from [Stem Separation](/api-reference/audio/stem)) for more accurate instrument isolation. |
+
+## Response
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "state": "complete",
+    "instruments": {
+      "piano": [ ... ],
+      "bass": [ ... ]
+    }
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `state` | string | Processing state |
+| `instruments` | object | Map of instrument name → note array |
+
+## Example
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/midi \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "clip_id": "abc123def456"
+  }'
+```
+
+## Workflow tip
+
+For best results, run [Stem Separation](/api-reference/audio/stem) first and pass the returned job ID as `stem_clip_id`:
+
+```bash
+# Step 1: separate stems
+POST /api/v1/music/stem  →  stem.id = "stem-xyz"
+
+# Step 2: export MIDI with stem context
+POST /api/v1/music/midi  { "clip_id": "abc123", "stem_clip_id": "stem-xyz" }
+```

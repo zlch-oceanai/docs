@@ -1,33 +1,126 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "Introduction"
+description: "API standards, authentication, errors, and async workflow"
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Base URL
 
-## Welcome
+All API endpoints use the following base URL:
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+```
+https://api.example.com
+```
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+All requests and responses are JSON (`Content-Type: application/json`).
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+Every request must include an AppKey in the `Authorization` header:
+
+```http
+Authorization: Bearer sk-mm-your-appkey
+```
+
+AppKeys start with `sk-mm-`. You can create and manage keys from the dashboard under **API Keys**.
+
+<Warning>
+  Requests without a valid AppKey return HTTP 401 with error code `1002`.
+</Warning>
+
+## Response format
+
+All responses share a common envelope:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": { ... }
+}
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | integer | `0` = success; any non-zero value = error |
+| `message` | string | Human-readable status message |
+| `request_id` | string | Unique ID for this request — include in support tickets |
+| `data` | object | Response payload (present on success) |
+
+## Error codes
+
+| Range | Category | Common codes |
+|-------|----------|-------------|
+| 1xxx | Authentication | 1001 missing, 1002 invalid, 1003 disabled, 1004 deleted |
+| 2xxx | Rate limiting | 2001 rate exceeded, 2002 concurrent exceeded, 2003 daily quota |
+| 3xxx | Account / quota | 3001 insufficient points, 3002 suspended |
+| 4xxx | Request errors | 4001 invalid params, 4002 prompt too long, 4003 task not found, 4004 music not found, 4005 result expired |
+| 5xxx | Generation errors | 5001 gen failed, 5002 all platforms failed, 5003 task timeout |
+| 9xxx | System errors | 9001 internal error, 9002 service unavailable |
+
+Example error response:
+
+```json
+{
+  "code": 4001,
+  "message": "prompt or tags is required",
+  "request_id": "req-1710000000000"
+}
+```
+
+## Rate limiting
+
+Rate-limited responses return HTTP `429` with these headers:
+
+| Header | Description |
+|--------|-------------|
+| `Retry-After` | Seconds until the limit resets |
+| `X-RateLimit-Limit` | Requests allowed per window |
+| `X-RateLimit-Remaining` | Requests remaining in this window |
+| `X-RateLimit-Reset` | Unix timestamp (ms) when the window resets |
+
+## Async workflow
+
+Most music generation endpoints are **asynchronous**:
+
+```
+POST /api/v1/music/generate
+→ returns { task_id, status: "queuing" }
+
+POST /api/v1/task/{task_id}   (poll)
+→ status: queuing | processing | completed | failed
+
+When completed:
+→ results[] contains audio_url, image_url, duration, expire_at
+```
+
+**Task statuses:**
+
+| Status | Meaning |
+|--------|---------|
+| `queuing` | Task accepted, waiting in queue |
+| `processing` | AI generation in progress |
+| `completed` | Done — `results` populated |
+| `failed` | Generation failed — `error` field explains why |
+
+**Recommended polling interval:** every 5 seconds. Most tracks complete in 30–120 seconds.
+
+**Tip:** Use `callback_url` to avoid polling entirely — the server will POST results to your endpoint when done.
+
+## Webhook callbacks
+
+When you provide `callback_url`, the server sends a POST request when the task completes:
+
+```json
+{
+  "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+  "status": "completed",
+  "results": [ { ... } ]
+}
+```
+
+**Signature verification:** Each webhook includes an `X-Signature` header. Compute `HMAC-SHA256(body, signing_secret)` and compare. Your `signing_secret` is shown once when creating the AppKey.
+
+## Data retention
+
+Generated music files are stored for a configurable duration (default 7 days). After expiry, `audio_url` and `image_url` become unavailable. The `expire_at` field (Unix ms) indicates when each result expires. Requesting an expired music ID returns error `4005`.

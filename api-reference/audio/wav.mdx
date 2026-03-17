@@ -1,0 +1,53 @@
+---
+title: "WAV Download"
+description: "Get a high-quality WAV download URL for a clip"
+---
+
+## Endpoint
+
+```http
+GET /api/v1/music/wav?clip_id={clip_id}
+```
+
+**Synchronous.** Returns the WAV download URL immediately.
+
+Returns a lossless WAV format download URL for a clip. Use this when you need uncompressed audio for professional production workflows.
+
+## Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `clip_id` | string | **Yes** | Clip ID to download as WAV. |
+
+## Response
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": "https://cdn.example.com/tob/gen/abc123.wav"
+}
+```
+
+The `data` field is a string containing the direct download URL for the WAV file.
+
+## Example
+
+```bash
+curl "https://api.example.com/api/v1/music/wav?clip_id=abc123def456" \
+  -H "Authorization: Bearer sk-mm-your-key"
+```
+
+Then download the file:
+
+```bash
+WAV_URL=$(curl -s "https://api.example.com/api/v1/music/wav?clip_id=abc123" \
+  -H "Authorization: Bearer sk-mm-your-key" | jq -r '.data')
+
+curl -o track.wav "$WAV_URL"
+```
+
+<Note>
+  WAV files are larger than MP3. The URL is subject to the same expiration policy as the clip — check `expire_at` from [Get Music](/api-reference/music/get) before downloading.
+</Note>

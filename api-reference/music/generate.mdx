@@ -1,0 +1,67 @@
+---
+title: "Generate Music"
+description: "Create original AI-generated music tracks from a text prompt or style tags"
+---
+
+## Endpoint
+
+```http
+POST /api/v1/music/generate
+```
+
+This is an **asynchronous** endpoint. It returns a `task_id` immediately. Use [Get Task](/api-reference/tasks/get) to poll for results.
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `prompt` | string | See note | Lyric content or song description. Required if `tags` is empty. |
+| `title` | string | No | Track title. |
+| `tags` | string | See note | Style tags (e.g. `"pop upbeat female vocals"`). Required if `prompt` is empty. |
+| `make_instrumental` | boolean | No | Generate an instrumental track (no lyrics). Default `false`. |
+| `callback_url` | string | No | URL to receive webhook callback when task completes. |
+| `retention_days` | integer | No | How many days to keep audio files. Default `7`, max `30`. |
+
+<Note>
+  At least one of `prompt` or `tags` is required.
+</Note>
+
+## Response
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "queuing"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `task_id` | string | Use this to poll [Get Task](/api-reference/tasks/get) for results. |
+| `status` | string | Initial status — always `"queuing"`. |
+
+## Example
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/generate \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A dreamy indie pop song about rainy days",
+    "title": "Rainy Day",
+    "tags": "indie pop dreamy",
+    "callback_url": "https://yourserver.com/webhooks/music"
+  }'
+```
+
+## Typical flow
+
+1. Call this endpoint → receive `task_id`
+2. Poll `POST /api/v1/task/{task_id}` every 5 seconds
+3. When `status` = `"completed"`, read `results[].audio_url`
+4. Files expire after `retention_days` — download promptly

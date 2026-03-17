@@ -1,0 +1,55 @@
+---
+title: "Infill (Replace Section)"
+description: "Replace a section of a track with AI-generated content"
+---
+
+## Endpoint
+
+```http
+POST /api/v1/music/infill
+```
+
+**Asynchronous.** Returns a `task_id`. Poll [Get Task](/api-reference/tasks/get) for results.
+
+Replaces a specified time range within an existing clip with new AI-generated content while keeping the rest of the track intact. Useful for fixing or improving a specific section.
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `clip_id` | string | **Yes** | Clip ID of the source track. |
+| `infill_start_s` | float | **Yes** | Start time (seconds) of the section to replace. |
+| `infill_end_s` | float | **Yes** | End time (seconds) of the section to replace. |
+| `prompt` | string | No | Description or lyrics for the replacement section. |
+| `tags` | string | No | Style tags for the replacement section. |
+| `mv` | string | No | Model version override. |
+| `callback_url` | string | No | Webhook URL for completion notification. |
+| `retention_days` | integer | No | Days to retain audio files. Default `7`. |
+
+## Response
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "request_id": "req-1710000000000",
+  "data": {
+    "task_id": "64f3a1b2c8d9e0f1a2b3c4d5",
+    "status": "queuing"
+  }
+}
+```
+
+## Example
+
+```bash
+curl -X POST https://api.example.com/api/v1/music/infill \
+  -H "Authorization: Bearer sk-mm-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "clip_id": "abc123def456",
+    "infill_start_s": 45.0,
+    "infill_end_s": 60.0,
+    "prompt": "An epic guitar solo bridge"
+  }'
+```
