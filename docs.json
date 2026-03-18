@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "MusicMint - AI Music API",
+  "name": "MusicMint",
   "colors": {
     "primary": "#16A34A",
     "light": "#4ADE80",
